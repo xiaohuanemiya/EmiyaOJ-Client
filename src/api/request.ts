@@ -3,11 +3,11 @@ import type { ApiResponse } from '@/types'
 
 /**
  * Create axios instance with base configuration
- * NOTE: Set VITE_API_BASE_URL environment variable to point to your backend server.
- * If not set, requests will be relative to the current domain (useful for proxy setups).
+ * NOTE: Set VITE_API_BASE_URL environment variable to override the default backend URL.
+ * Default backend URL: http://localhost:8080
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
