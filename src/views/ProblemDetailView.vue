@@ -15,6 +15,7 @@ const code = ref('')
 const selectedLanguageId = ref<number | null>(null)
 const showSubmissionResult = ref(false)
 const lastSubmissionId = ref<number | null>(null)
+const validationError = ref('')
 
 // Computed
 const problemId = computed(() => Number(route.params.id))
@@ -57,12 +58,14 @@ const userStatusClass = computed(() => {
 
 // Methods
 const handleSubmit = async () => {
+  validationError.value = ''
+  
   if (!code.value.trim()) {
-    alert('请输入代码')
+    validationError.value = '请输入代码'
     return
   }
   if (!selectedLanguageId.value) {
-    alert('请选择编程语言')
+    validationError.value = '请选择编程语言'
     return
   }
 
@@ -213,6 +216,11 @@ watch(problemId, (newId) => {
             placeholder="在此输入你的代码..."
             spellcheck="false"
           ></textarea>
+
+          <!-- Validation Error -->
+          <div v-if="validationError" class="validation-error">
+            {{ validationError }}
+          </div>
 
           <div class="editor-actions">
             <button
@@ -463,6 +471,15 @@ watch(problemId, (newId) => {
 .code-textarea::placeholder {
   color: var(--color-text);
   opacity: 0.5;
+}
+
+.validation-error {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
 .editor-actions {

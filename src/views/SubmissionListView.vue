@@ -3,6 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSubmissionStore } from '@/stores'
 import { SubmissionStatusText } from '@/types'
+import { formatTime } from '@/utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -40,10 +41,6 @@ const viewProblem = (id: number) => {
 
 const handlePageChange = (page: number) => {
   submissionStore.setPage(page)
-}
-
-const formatTime = (time: string) => {
-  return new Date(time).toLocaleString('zh-CN')
 }
 
 const goBack = () => {

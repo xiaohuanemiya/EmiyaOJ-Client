@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, computed, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSubmissionStore } from '@/stores'
 import { SubmissionStatusText, SubmissionStatus } from '@/types'
+import { formatTime } from '@/utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,10 +39,6 @@ const viewProblem = () => {
 
 const goBack = () => {
   router.back()
-}
-
-const formatTime = (time: string) => {
-  return new Date(time).toLocaleString('zh-CN')
 }
 
 const parseJudgeInfo = () => {
