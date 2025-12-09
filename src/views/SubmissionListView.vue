@@ -54,7 +54,6 @@ const handleReset = () => {
 const getStatusType = (status: SubmissionStatus) => {
   if (status === 'Accepted') return 'success'
   if (status === 'Pending' || status === 'Running') return 'info'
-  if (status === 'Compile Error') return 'warning'
   return 'danger'
 }
 

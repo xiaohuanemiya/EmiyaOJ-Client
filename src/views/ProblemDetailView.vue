@@ -50,8 +50,8 @@ const getLanguages = async () => {
     const data = await languageAPI.getList()
     languages.value = data
     // 默认选择第一个语言
-    if (data && data.length > 0) {
-      submitForm.languageId = data[0]!.id
+    if (data && data.length > 0 && data[0]) {
+      submitForm.languageId = data[0].id
     }
   } catch (error) {
     console.error('获取语言列表失败:', error)

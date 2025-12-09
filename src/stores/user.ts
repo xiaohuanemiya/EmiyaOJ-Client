@@ -69,10 +69,16 @@ export const useUserStore = defineStore('user', () => {
     if (!token.value) return false
     // 检查token是否过期
     if (isTokenExpired(token.value)) {
-      clearUserInfo()
       return false
     }
     return true
+  }
+
+  /** 清除过期的用户信息 */
+  const clearExpiredUserInfo = () => {
+    if (token.value && isTokenExpired(token.value)) {
+      clearUserInfo()
+    }
   }
 
   /** 检查是否有某个权限 */
@@ -119,6 +125,7 @@ export const useUserStore = defineStore('user', () => {
     clearUserInfo,
     isLoggedIn,
     hasPermission,
-    restoreUserInfo
+    restoreUserInfo,
+    clearExpiredUserInfo
   }
 })

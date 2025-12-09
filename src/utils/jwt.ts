@@ -20,13 +20,14 @@ export function parseJwtToken(token: string): UserLoginInfo | null {
 /**
  * 检查token是否过期
  * @param token JWT token
+ * @param bufferSeconds 缓冲时间（秒），默认30秒，用于防止时钟偏差和网络延迟
  * @returns 是否过期
  */
-export function isTokenExpired(token: string): boolean {
+export function isTokenExpired(token: string, bufferSeconds = 30): boolean {
   try {
     const decoded = jwtDecode<JwtPayload>(token)
     const currentTime = Date.now() / 1000
-    return decoded.exp < currentTime
+    return decoded.exp < currentTime + bufferSeconds
   } catch {
     return true
   }
