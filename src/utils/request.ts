@@ -31,8 +31,9 @@ service.interceptors.request.use(
       }
       
       // 添加 Token 到请求头
+      // 使用 setHeader 方法或直接设置到 headers 对象
       if (config.headers) {
-        config.headers.Authorization = token
+        config.headers.set('Authorization', token.trim())
       }
     }
     return config
