@@ -9,7 +9,7 @@ export const problemAPI = {
     keyword?: string
   }) {
     return request<PageVO<ProblemVO>>({
-      url: '/client/problem/page',
+      url: '/problem/page',
       method: 'GET',
       params
     })
@@ -18,7 +18,7 @@ export const problemAPI = {
   /** 获取题目详情 */
   getDetail(id: number) {
     return request<ProblemVO>({
-      url: `/client/problem/${id}`,
+      url: `/problem/${id}`,
       method: 'GET'
     })
   }
