@@ -30,10 +30,9 @@ service.interceptors.request.use(
         return Promise.reject(new Error('Token已过期'))
       }
       
-      // 添加 Token 到请求头
-      // 使用 setHeader 方法或直接设置到 headers 对象
+      // 添加 Bearer Token 到请求头
       if (config.headers) {
-        config.headers.set('Authorization', token.trim())
+        config.headers.Authorization = `Bearer ${token}`
       }
     }
     return config
