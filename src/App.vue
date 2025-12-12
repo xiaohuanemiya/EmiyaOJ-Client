@@ -67,6 +67,7 @@ const isLoginPage = () => {
 
 html, body, #app {
   height: 100%;
+  min-width: 1024px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -123,5 +124,11 @@ html, body, #app {
 .main-content {
   background-color: #f5f5f5;
   overflow-y: auto;
+  padding: 20px;
+}
+
+.main-content > * {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 </style>
