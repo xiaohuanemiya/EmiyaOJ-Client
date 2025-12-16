@@ -3,7 +3,7 @@
   <div class="problem-detail-container">
     <el-row :gutter="24">
       <!-- 左侧：题目描述 -->
-      <el-col :span="10">
+      <el-col :xs="24" :sm="24" :md="10" :lg="10" :xl="10">
         <el-card v-loading="problemStore.loading">
           <template #header>
             <div class="problem-header">
@@ -83,7 +83,7 @@
       </el-col>
 
       <!-- 右侧：代码编辑器 -->
-      <el-col :span="14">
+      <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="14">
         <el-card>
           <template #header>
             <div class="editor-header">
@@ -192,17 +192,74 @@ const handleSubmit = async () => {
     })
 
     if (submissionId) {
-      ElMessage.success('提交成功')
-      router.push(`/submission/${submissionId}`)
+      ElMessage.success('提交成功，正在判题...')
+      // 开始轮询查询提交结果
+      await pollSubmissionResult(submissionId)
     } else {
       ElMessage.error('提交失败')
+      submitting.value = false
     }
   } catch (error) {
     console.error('Submit error:', error)
     ElMessage.error('提交失败')
-  } finally {
     submitting.value = false
   }
+}
+
+// 轮询查询提交结果
+const pollSubmissionResult = async (submissionId: number) => {
+  const maxAttempts = 60 // 最多轮询60次，相当于60秒
+  const pollInterval = 1000 // 每次间隔1秒
+  let attempts = 0
+
+  const poll = async () => {
+    try {
+      await submissionStore.fetchSubmissionDetail(submissionId)
+      const submission = submissionStore.currentSubmission
+
+      if (!submission) {
+        throw new Error('无法获取提交信息')
+      }
+
+      // 检查是否已经完成判题（非 Pending 和 Judging 状态）
+      if (submission.status !== 'Pending' && submission.status !== 'Judging') {
+        submitting.value = false
+        
+        // 根据结果显示不同的消息
+        if (submission.status === 'Accepted') {
+          ElMessage.success(`判题完成！状态：${submission.status}`)
+        } else {
+          ElMessage.warning(`判题完成！状态：${submission.status}`)
+        }
+        
+        // 跳转到提交详情页面
+        router.push(`/submission/${submissionId}`)
+        return
+      }
+
+      // 如果还在判题中，继续轮询
+      attempts++
+      if (attempts < maxAttempts) {
+        setTimeout(poll, pollInterval)
+      } else {
+        submitting.value = false
+        ElMessage.warning('判题超时，请前往提交记录查看结果')
+        router.push(`/submission/${submissionId}`)
+      }
+    } catch (error) {
+      console.error('Poll submission error:', error)
+      attempts++
+      if (attempts < maxAttempts) {
+        setTimeout(poll, pollInterval)
+      } else {
+        submitting.value = false
+        ElMessage.error('查询判题结果失败')
+      }
+    }
+  }
+
+  // 开始轮询
+  setTimeout(poll, pollInterval)
 }
 
 const handleReset = () => {
@@ -223,6 +280,8 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .problem-detail-container {
+  width: 100%;
+  padding: 20px;
 
   .problem-header {
     display: flex;

@@ -33,7 +33,7 @@
       >
         <el-table-column prop="id" label="提交ID" width="150" />
         <el-table-column prop="problemTitle" label="题目" min-width="200" />
-        <el-table-column prop="language" label="语言" width="100" />
+        <el-table-column prop="languageName" label="语言" width="100" />
         <el-table-column label="状态" width="120">
           <template #default="{ row }">
             <status-tag :status="row.status" />
@@ -41,12 +41,12 @@
         </el-table-column>
         <el-table-column label="时间" width="100">
           <template #default="{ row }">
-            {{ row.time ? `${row.time}ms` : '-' }}
+            {{ row.timeUsed ? `${row.timeUsed}ms` : '-' }}
           </template>
         </el-table-column>
         <el-table-column label="内存" width="100">
           <template #default="{ row }">
-            {{ row.memory ? `${row.memory}KB` : '-' }}
+            {{ row.memoryUsed ? `${row.memoryUsed}KB` : '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="提交时间" width="180" />
@@ -114,6 +114,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .submission-list-container {
+  width: 100%;
+  padding: 20px;
 
   .filter-bar {
     margin-bottom: 20px;

@@ -56,6 +56,8 @@ const authStore = useAuthStore()
 
 <style scoped lang="scss">
 .profile-container {
+  width: 100%;
+  padding: 20px;
 
   .user-stats {
     margin-top: 30px;

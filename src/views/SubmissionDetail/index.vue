@@ -15,16 +15,22 @@
           {{ currentSubmission?.problemTitle }}
         </el-descriptions-item>
         <el-descriptions-item label="语言">
-          {{ currentSubmission?.language }}
+          {{ currentSubmission?.languageName }}
         </el-descriptions-item>
         <el-descriptions-item label="状态">
           <status-tag :status="currentSubmission?.status" />
         </el-descriptions-item>
+        <el-descriptions-item label="得分" v-if="currentSubmission?.score !== undefined">
+          {{ currentSubmission.score }}
+        </el-descriptions-item>
         <el-descriptions-item label="用时">
-          {{ currentSubmission?.time ? `${currentSubmission.time}ms` : '-' }}
+          {{ currentSubmission?.timeUsed ? `${currentSubmission.timeUsed}ms` : '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="内存">
-          {{ currentSubmission?.memory ? `${currentSubmission.memory}KB` : '-' }}
+          {{ currentSubmission?.memoryUsed ? `${currentSubmission.memoryUsed}KB` : '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="通过率" v-if="currentSubmission?.passRate">
+          {{ currentSubmission.passRate }}
         </el-descriptions-item>
         <el-descriptions-item label="提交时间">
           {{ currentSubmission?.createTime }}
@@ -42,7 +48,7 @@
         <h3>提交代码</h3>
         <code-editor
           :model-value="currentSubmission?.code || ''"
-          :language="getLanguageMode(currentSubmission?.language)"
+          :language="getLanguageMode(currentSubmission?.languageName)"
           :readonly="true"
           height="500px"
         />
@@ -90,6 +96,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .submission-detail-container {
+  width: 100%;
+  padding: 20px;
 
   .header-content {
     display: flex;

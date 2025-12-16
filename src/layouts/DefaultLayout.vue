@@ -91,8 +91,7 @@ const handleCommand = (command: string) => {
     height: 60px;
 
     .header-content {
-      max-width: 1600px;
-      margin: 0 auto;
+      width: 100%;
       height: 100%;
       display: flex;
       align-items: center;
@@ -130,9 +129,7 @@ const handleCommand = (command: string) => {
   }
 
   .main-content {
-    max-width: 1600px;
     width: 100%;
-    margin: 0 auto;
     padding: 30px 40px;
     flex: 1;
   }

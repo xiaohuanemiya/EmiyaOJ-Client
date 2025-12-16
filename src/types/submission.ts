@@ -10,11 +10,14 @@ export interface Submission {
   problemTitle: string
   userId: number
   username: string
-  language: string
+  languageId: number
+  languageName: string
   code?: string
-  status: number
-  time?: number
-  memory?: number
+  status: string // 'Pending', 'Judging', 'Accepted', 'Wrong Answer', etc.
+  score?: number
+  timeUsed?: number
+  memoryUsed?: number
+  passRate?: string
   judgeInfo?: string
   createTime: string
 }

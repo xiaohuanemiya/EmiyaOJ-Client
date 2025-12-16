@@ -86,6 +86,9 @@ const router = useRouter()
 
 <style scoped lang="scss">
 .home-container {
+  width: 100%;
+  padding: 20px;
+
   .welcome-card {
     text-align: center;
     padding: 60px 20px;

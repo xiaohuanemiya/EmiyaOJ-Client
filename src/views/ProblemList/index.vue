@@ -160,6 +160,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .problem-list-container {
+  width: 100%;
+  padding: 20px;
   
   .header-content {
     display: flex;
