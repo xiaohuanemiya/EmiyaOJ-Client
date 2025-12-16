@@ -5,7 +5,7 @@ export const languageAPI = {
   /** 获取所有可用语言 */
   getList() {
     return request<Language[]>({
-      url: '/language/list',
+      url: '/client/language/list',
       method: 'GET'
     })
   },
@@ -13,7 +13,7 @@ export const languageAPI = {
   /** 获取语言详情 */
   getDetail(id: number) {
     return request<Language>({
-      url: `/language/${id}`,
+      url: `/client/language/${id}`,
       method: 'GET'
     })
   }

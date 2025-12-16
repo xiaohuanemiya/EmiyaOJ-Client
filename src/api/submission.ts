@@ -5,7 +5,7 @@ export const submissionAPI = {
   /** 提交代码 */
   submit(data: SubmitCodeDTO) {
     return request<number>({
-      url: '/submission/submit',
+      url: '/client/submission/submit',
       method: 'POST',
       data
     })
@@ -17,7 +17,7 @@ export const submissionAPI = {
     userId?: number
   }) {
     return request<PageVO<SubmissionVO>>({
-      url: '/submission/page',
+      url: '/client/submission/page',
       method: 'GET',
       params
     })
@@ -26,7 +26,7 @@ export const submissionAPI = {
   /** 获取提交详情 */
   getDetail(id: number) {
     return request<SubmissionVO>({
-      url: `/submission/${id}`,
+      url: `/client/submission/${id}`,
       method: 'GET'
     })
   }
