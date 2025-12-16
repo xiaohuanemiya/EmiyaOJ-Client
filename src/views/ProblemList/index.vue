@@ -87,8 +87,8 @@
       <!-- 分页 -->
       <div class="pagination-container">
         <el-pagination
-          v-model:current-page="queryParams.current"
-          v-model:page-size="queryParams.size"
+          v-model:current-page="queryParams.pageNo"
+          v-model:page-size="queryParams.pageSize"
           :total="problemStore.total"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
@@ -111,14 +111,14 @@ const router = useRouter()
 const problemStore = useProblemStore()
 
 const queryParams = reactive<ProblemQueryParams>({
-  current: 1,
-  size: 20,
+  pageNo: 1,
+  pageSize: 20,
   difficulty: undefined,
   keyword: ''
 })
 
 const handleSearch = () => {
-  queryParams.current = 1
+  queryParams.pageNo = 1
   problemStore.fetchProblems(queryParams)
 }
 
@@ -127,7 +127,7 @@ const handlePageChange = () => {
 }
 
 const handleSizeChange = () => {
-  queryParams.current = 1
+  queryParams.pageNo = 1
   problemStore.fetchProblems(queryParams)
 }
 

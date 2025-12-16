@@ -24,6 +24,6 @@ export interface PageResult<T> {
  * 分页查询参数
  */
 export interface PageQuery {
-  current: number
-  size: number
+  pageNo: number
+  pageSize: number
 }
