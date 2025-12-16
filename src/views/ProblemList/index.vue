@@ -54,7 +54,7 @@
         </el-table-column>
         <el-table-column label="通过率" width="120">
           <template #default="{ row }">
-            {{ formatPassRate(row.passRate) }}
+            {{ formatPassRate(row) }}
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
@@ -73,8 +73,8 @@
         <el-table-column label="标签" min-width="200">
           <template #default="{ row }">
             <el-tag
-              v-for="tag in row.tags"
-              :key="tag"
+              v-for="(tag, index) in (row.tags || [])"
+              :key="index"
               size="small"
               style="margin-right: 5px"
             >
@@ -145,8 +145,12 @@ const getDifficultyText = (difficulty: number) => {
   return texts[difficulty] || '未知'
 }
 
-const formatPassRate = (rate: number) => {
-  return `${(rate * 100).toFixed(1)}%`
+const formatPassRate = (problem: any) => {
+  if (problem.submitCount === 0) {
+    return '0.0%'
+  }
+  const rate = (problem.acceptCount / problem.submitCount) * 100
+  return `${rate.toFixed(1)}%`
 }
 
 onMounted(() => {

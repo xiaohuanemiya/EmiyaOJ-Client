@@ -13,10 +13,8 @@ export interface ApiResponse<T = any> {
  * 分页结果
  */
 export interface PageResult<T> {
-  records: T[]
+  list: T[]
   total: number
-  size: number
-  current: number
   pages: number
 }
 

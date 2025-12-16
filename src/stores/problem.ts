@@ -17,7 +17,7 @@ export const useProblemStore = defineStore('problem', () => {
     try {
       const response = await getProblemList(params)
       if (response.code === 200 && response.data) {
-        problems.value = response.data.records
+        problems.value = response.data.list
         total.value = response.data.total
       }
     } catch (error) {

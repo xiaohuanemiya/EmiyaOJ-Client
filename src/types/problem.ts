@@ -8,17 +8,18 @@ export interface Problem {
   id: number
   title: string
   description: string
-  inputFormat: string
-  outputFormat: string
-  examples: Example[]
+  inputDescription: string
+  outputDescription: string
+  sampleInput: string
+  sampleOutput: string
+  hint?: string
   timeLimit: number
   memoryLimit: number
   difficulty: number
-  passRate: number
-  tags: string[]
-  userStatus: number
-  acceptCount?: number
-  submitCount?: number
+  acceptCount: number
+  submitCount: number
+  tags?: string[]
+  userStatus?: number
   createTime: string
 }
 

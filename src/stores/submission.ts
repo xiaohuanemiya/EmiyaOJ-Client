@@ -30,7 +30,7 @@ export const useSubmissionStore = defineStore('submission', () => {
     try {
       const response = await getSubmissionList(params)
       if (response.code === 200 && response.data) {
-        submissions.value = response.data.records
+        submissions.value = response.data.list
         total.value = response.data.total
       }
     } catch (error) {

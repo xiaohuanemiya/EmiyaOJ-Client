@@ -24,34 +24,39 @@
           </div>
 
           <!-- 输入格式 -->
-          <div class="problem-section">
+          <div class="problem-section" v-if="currentProblem?.inputDescription">
             <h3>输入格式</h3>
-            <markdown-viewer :content="currentProblem?.inputFormat || ''" />
+            <markdown-viewer :content="currentProblem?.inputDescription || ''" />
           </div>
 
           <!-- 输出格式 -->
-          <div class="problem-section">
+          <div class="problem-section" v-if="currentProblem?.outputDescription">
             <h3>输出格式</h3>
-            <markdown-viewer :content="currentProblem?.outputFormat || ''" />
+            <markdown-viewer :content="currentProblem?.outputDescription || ''" />
           </div>
 
           <!-- 示例 -->
           <div
-            v-for="(example, index) in currentProblem?.examples"
-            :key="index"
+            v-if="currentProblem?.sampleInput || currentProblem?.sampleOutput"
             class="problem-section"
           >
-            <h3>示例 {{ index + 1 }}</h3>
+            <h3>示例</h3>
             <div class="example-block">
-              <div class="example-item">
+              <div class="example-item" v-if="currentProblem?.sampleInput">
                 <strong>输入：</strong>
-                <pre>{{ example.input }}</pre>
+                <pre>{{ currentProblem.sampleInput }}</pre>
               </div>
-              <div class="example-item">
+              <div class="example-item" v-if="currentProblem?.sampleOutput">
                 <strong>输出：</strong>
-                <pre>{{ example.output }}</pre>
+                <pre>{{ currentProblem.sampleOutput }}</pre>
               </div>
             </div>
+          </div>
+
+          <!-- 提示 -->
+          <div class="problem-section" v-if="currentProblem?.hint">
+            <h3>提示</h3>
+            <markdown-viewer :content="currentProblem?.hint || ''" />
           </div>
 
           <!-- 限制 -->
@@ -64,7 +69,7 @@
           </div>
 
           <!-- 标签 -->
-          <div class="problem-section">
+          <div class="problem-section" v-if="currentProblem?.tags && currentProblem.tags.length > 0">
             <h3>标签</h3>
             <el-tag
               v-for="tag in currentProblem?.tags"
