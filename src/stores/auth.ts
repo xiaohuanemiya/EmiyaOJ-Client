@@ -22,7 +22,12 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await loginApi(params)
       if (response.code === 200 && response.data) {
         token.value = response.data.token
-        user.value = response.data.user
+        // Map LoginResponse to User
+        user.value = {
+          id: response.data.id,
+          username: response.data.username,
+          name: response.data.name
+        }
         setToken(response.data.token)
         return true
       }

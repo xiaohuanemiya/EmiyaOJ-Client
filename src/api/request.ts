@@ -37,14 +37,14 @@ service.interceptors.response.use(
 
     // 如果code不是200，视为错误
     if (res.code !== 200) {
-      ElMessage.error(res.message || '请求失败')
+      ElMessage.error(res.msg || '请求失败')
 
       // 401: 未授权，跳转到登录页
       if (res.code === 401) {
         window.location.href = '/login'
       }
 
-      return Promise.reject(new Error(res.message || '请求失败'))
+      return Promise.reject(new Error(res.msg || '请求失败'))
     }
 
     return res as any
