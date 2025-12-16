@@ -1,9 +1,9 @@
 <!-- src/views/ProblemDetail/index.vue -->
 <template>
   <div class="problem-detail-container">
-    <el-row :gutter="20">
+    <el-row :gutter="24">
       <!-- 左侧：题目描述 -->
-      <el-col :span="12">
+      <el-col :span="10">
         <el-card v-loading="problemStore.loading">
           <template #header>
             <div class="problem-header">
@@ -83,7 +83,7 @@
       </el-col>
 
       <!-- 右侧：代码编辑器 -->
-      <el-col :span="12">
+      <el-col :span="14">
         <el-card>
           <template #header>
             <div class="editor-header">
@@ -223,7 +223,6 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .problem-detail-container {
-  padding: 20px;
 
   .problem-header {
     display: flex;

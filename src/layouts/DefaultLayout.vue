@@ -91,13 +91,13 @@ const handleCommand = (command: string) => {
     height: 60px;
 
     .header-content {
-      max-width: 1200px;
+      max-width: 1600px;
       margin: 0 auto;
       height: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 40px;
 
       .logo {
         h1 {
@@ -130,10 +130,10 @@ const handleCommand = (command: string) => {
   }
 
   .main-content {
-    max-width: 1200px;
+    max-width: 1600px;
     width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px 40px;
     flex: 1;
   }
 

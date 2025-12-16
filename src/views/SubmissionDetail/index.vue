@@ -90,7 +90,6 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .submission-detail-container {
-  padding: 20px;
 
   .header-content {
     display: flex;

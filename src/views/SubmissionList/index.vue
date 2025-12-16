@@ -114,7 +114,6 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .submission-list-container {
-  padding: 20px;
 
   .filter-bar {
     margin-bottom: 20px;
