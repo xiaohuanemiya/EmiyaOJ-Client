@@ -188,7 +188,7 @@ const handleSubmit = async () => {
 
     if (submissionId) {
       ElMessage.success('提交成功')
-      router.push(\`/submission/\${submissionId}\`)
+      router.push(`/submission/${submissionId}`)
     } else {
       ElMessage.error('提交失败')
     }
@@ -210,7 +210,7 @@ onMounted(async () => {
   await languageStore.fetchLanguages()
   
   // 设置默认语言
-  if (languageStore.languages.length > 0) {
+  if (languageStore.languages.length > 0 && languageStore.languages[0]) {
     selectedLanguageId.value = languageStore.languages[0].id
   }
 })

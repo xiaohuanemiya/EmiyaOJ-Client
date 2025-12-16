@@ -41,12 +41,12 @@
         </el-table-column>
         <el-table-column label="时间" width="100">
           <template #default="{ row }">
-            {{ row.time ? \`\${row.time}ms\` : '-' }}
+            {{ row.time ? `${row.time}ms` : '-' }}
           </template>
         </el-table-column>
         <el-table-column label="内存" width="100">
           <template #default="{ row }">
-            {{ row.memory ? \`\${row.memory}KB\` : '-' }}
+            {{ row.memory ? `${row.memory}KB` : '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="提交时间" width="180" />
@@ -104,7 +104,7 @@ const handleSizeChange = () => {
 }
 
 const handleRowClick = (row: any) => {
-  router.push(\`/submission/\${row.id}\`)
+  router.push(`/submission/${row.id}`)
 }
 
 onMounted(() => {

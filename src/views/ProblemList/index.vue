@@ -132,7 +132,7 @@ const handleSizeChange = () => {
 }
 
 const handleRowClick = (row: any) => {
-  router.push(\`/problem/\${row.id}\`)
+  router.push(`/problem/${row.id}`)
 }
 
 const getDifficultyType = (difficulty: number) => {
@@ -146,7 +146,7 @@ const getDifficultyText = (difficulty: number) => {
 }
 
 const formatPassRate = (rate: number) => {
-  return \`\${(rate * 100).toFixed(1)}%\`
+  return `${(rate * 100).toFixed(1)}%`
 }
 
 onMounted(() => {

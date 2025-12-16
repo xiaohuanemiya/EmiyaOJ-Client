@@ -1,5 +1,6 @@
 // src/api/request.ts
-import axios, type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
+import axios from 'axios'
+import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
 import { getToken } from '@/utils/storage'
 import type { ApiResponse } from '@/types/api'
@@ -46,7 +47,7 @@ service.interceptors.response.use(
       return Promise.reject(new Error(res.message || '请求失败'))
     }
 
-    return res
+    return res as any
   },
   (error: AxiosError) => {
     console.error('Response error:', error)

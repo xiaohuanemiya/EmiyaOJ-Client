@@ -21,10 +21,10 @@
           <status-tag :status="currentSubmission?.status" />
         </el-descriptions-item>
         <el-descriptions-item label="用时">
-          {{ currentSubmission?.time ? \`\${currentSubmission.time}ms\` : '-' }}
+          {{ currentSubmission?.time ? `${currentSubmission.time}ms` : '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="内存">
-          {{ currentSubmission?.memory ? \`\${currentSubmission.memory}KB\` : '-' }}
+          {{ currentSubmission?.memory ? `${currentSubmission.memory}KB` : '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="提交时间">
           {{ currentSubmission?.createTime }}
