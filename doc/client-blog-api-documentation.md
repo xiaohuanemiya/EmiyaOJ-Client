@@ -75,8 +75,8 @@
         "commentCount": 12,
         "status": 1,
         "isTop": false,
-        "createTime": "2025-12-01T10:00:00",
-        "updateTime": "2025-12-02T15:30:00"
+        "createTime": "2025-12-01T10:00:00+08:00",
+        "updateTime": "2025-12-02T15:30:00+08:00"
       }
     ],
     "total": 100,
@@ -135,8 +135,8 @@
     "status": 1,
     "isTop": false,
     "allowComment": true,
-    "createTime": "2025-12-01T10:00:00",
-    "updateTime": "2025-12-02T15:30:00"
+    "createTime": "2025-12-01T10:00:00+08:00",
+    "updateTime": "2025-12-02T15:30:00+08:00"
   }
 }
 ```
@@ -308,7 +308,7 @@
       "icon": "algorithm-icon",
       "postCount": 25,
       "sortOrder": 1,
-      "createTime": "2025-12-01T00:00:00"
+      "createTime": "2025-12-01T00:00:00+08:00"
     },
     {
       "id": 2,
@@ -317,7 +317,7 @@
       "icon": "datastructure-icon",
       "postCount": 18,
       "sortOrder": 2,
-      "createTime": "2025-12-01T00:00:00"
+      "createTime": "2025-12-01T00:00:00+08:00"
     }
   ]
 }
@@ -351,7 +351,7 @@
     "icon": "algorithm-icon",
     "postCount": 25,
     "sortOrder": 1,
-    "createTime": "2025-12-01T00:00:00"
+    "createTime": "2025-12-01T00:00:00+08:00"
   }
 }
 ```
@@ -388,14 +388,14 @@
       "name": "动态规划",
       "color": "#1890ff",
       "postCount": 15,
-      "createTime": "2025-12-01T00:00:00"
+      "createTime": "2025-12-01T00:00:00+08:00"
     },
     {
       "id": 2,
       "name": "贪心算法",
       "color": "#52c41a",
       "postCount": 12,
-      "createTime": "2025-12-01T00:00:00"
+      "createTime": "2025-12-01T00:00:00+08:00"
     }
   ]
 }
@@ -481,7 +481,7 @@
         "replyToUserId": null,
         "replyToUsername": null,
         "likeCount": 5,
-        "createTime": "2025-12-02T14:30:00",
+        "createTime": "2025-12-02T14:30:00+08:00",
         "replies": [
           {
             "id": 2,
@@ -495,7 +495,7 @@
             "replyToUserId": 2,
             "replyToUsername": "user123",
             "likeCount": 2,
-            "createTime": "2025-12-02T15:00:00",
+            "createTime": "2025-12-02T15:00:00+08:00",
             "replies": []
           }
         ]
@@ -742,7 +742,7 @@
         "bio": "热爱算法的程序员",
         "postCount": 15,
         "followerCount": 50,
-        "followTime": "2025-12-01T10:00:00"
+        "followTime": "2025-12-01T10:00:00+08:00"
       }
     ],
     "total": 30,
@@ -783,7 +783,7 @@
         "bio": "编程爱好者",
         "postCount": 8,
         "followerCount": 25,
-        "followTime": "2025-12-02T14:00:00"
+        "followTime": "2025-12-02T14:00:00+08:00"
       }
     ],
     "total": 120,
@@ -832,7 +832,7 @@ Authorization: Bearer <token>
 
 ## 注意事项
 
-1. 所有时间格式均为 ISO 8601 格式 (例如: `2025-12-01T10:00:00`)。
+1. 所有时间格式均为 ISO 8601 格式 (例如: `2025-12-01T10:00:00+08:00`)。
 2. 分页查询的页码从 1 开始。
 3. 所有涉及用户操作的接口都需要进行身份认证。
 4. 博客内容支持 Markdown 格式，前端需要进行相应的渲染处理。
