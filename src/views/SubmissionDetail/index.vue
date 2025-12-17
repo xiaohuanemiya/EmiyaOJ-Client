@@ -42,17 +42,6 @@
         <h3>判题信息</h3>
         <pre>{{ formatJudgeInfo(currentSubmission.judgeInfo) }}</pre>
       </div>
-
-      <!-- 提交代码 -->
-      <div class="code-section">
-        <h3>提交代码</h3>
-        <code-editor
-          :model-value="currentSubmission?.code || ''"
-          :language="getLanguageMode(currentSubmission?.languageName)"
-          :readonly="true"
-          height="500px"
-        />
-      </div>
     </el-card>
   </div>
 </template>
@@ -61,7 +50,6 @@
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSubmissionStore } from '@/stores/submission'
-import CodeEditor from '@/components/CodeEditor/index.vue'
 import StatusTag from '@/components/StatusTag/index.vue'
 
 const route = useRoute()
@@ -69,17 +57,6 @@ const submissionStore = useSubmissionStore()
 
 const submissionId = Number(route.params.id)
 const currentSubmission = computed(() => submissionStore.currentSubmission)
-
-const getLanguageMode = (language?: string) => {
-  const modeMap: Record<string, string> = {
-    'Java': 'java',
-    'C': 'c',
-    'C++': 'cpp',
-    'Python': 'python',
-    'JavaScript': 'javascript'
-  }
-  return modeMap[language || ''] || 'plaintext'
-}
 
 const formatJudgeInfo = (judgeInfo: string) => {
   try {
@@ -109,8 +86,7 @@ onMounted(() => {
     }
   }
 
-  .judge-info-section,
-  .code-section {
+  .judge-info-section {
     margin-top: 30px;
 
     h3 {
