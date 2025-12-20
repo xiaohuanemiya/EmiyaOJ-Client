@@ -42,12 +42,20 @@ class HttpClient {
     const queryString = params ? '?' + new URLSearchParams(this.serializeParams(params)).toString() : '';
     const fullUrl = `${this.config.baseURL}${url}${queryString}`;
 
-    const response = await fetch(fullUrl, {
-      method: 'GET',
-      headers: this.config.headers,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: this.config.headers,
+        signal: controller.signal,
+      });
+
+      return await this.handleResponse<T>(response);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   /**
@@ -56,13 +64,21 @@ class HttpClient {
   async post<T = any>(url: string, data?: any): Promise<ApiResponse<T>> {
     const fullUrl = `${this.config.baseURL}${url}`;
 
-    const response = await fetch(fullUrl, {
-      method: 'POST',
-      headers: this.config.headers,
-      body: JSON.stringify(data),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(fullUrl, {
+        method: 'POST',
+        headers: this.config.headers,
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+
+      return await this.handleResponse<T>(response);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   /**
@@ -71,13 +87,21 @@ class HttpClient {
   async put<T = any>(url: string, data?: any): Promise<ApiResponse<T>> {
     const fullUrl = `${this.config.baseURL}${url}`;
 
-    const response = await fetch(fullUrl, {
-      method: 'PUT',
-      headers: this.config.headers,
-      body: JSON.stringify(data),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(fullUrl, {
+        method: 'PUT',
+        headers: this.config.headers,
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+
+      return await this.handleResponse<T>(response);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   /**
@@ -86,12 +110,20 @@ class HttpClient {
   async delete<T = any>(url: string): Promise<ApiResponse<T>> {
     const fullUrl = `${this.config.baseURL}${url}`;
 
-    const response = await fetch(fullUrl, {
-      method: 'DELETE',
-      headers: this.config.headers,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(fullUrl, {
+        method: 'DELETE',
+        headers: this.config.headers,
+        signal: controller.signal,
+      });
+
+      return await this.handleResponse<T>(response);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   /**
@@ -99,12 +131,17 @@ class HttpClient {
    */
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        code: response.status,
-        message: response.statusText,
-        data: null,
-      }));
-      throw error;
+      try {
+        const error = await response.json();
+        throw error;
+      } catch (parseError) {
+        // If JSON parsing fails, create a generic error response
+        throw {
+          code: response.status,
+          message: response.statusText || 'Request failed',
+          data: null,
+        };
+      }
     }
 
     return response.json();

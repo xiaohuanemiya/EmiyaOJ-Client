@@ -66,7 +66,7 @@ export interface BlogComment {
   userId: number;
   username: string;
   content: string;
-  parentId: number;
+  parentId: number | null;
   replyToUserId: number | null;
   replyToUsername: string | null;
   likeCount: number;
@@ -107,7 +107,7 @@ export interface UpdateBlogRequest {
 export interface CreateCommentRequest {
   blogId: number;
   content: string;
-  parentId?: number;
+  parentId?: number | null;
   replyToUserId?: number | null;
 }
 
@@ -146,7 +146,7 @@ export interface CommentPageQuery {
   blogId: number;
   current: number;
   size: number;
-  parentId?: number;
+  parentId?: number | null;
 }
 
 /**

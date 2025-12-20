@@ -237,11 +237,6 @@ async function runExamples() {
   await exampleGetPopularTags();
 }
 
-// 如果直接运行此文件
-if (require.main === module) {
-  runExamples().catch(console.error);
-}
-
 export {
   exampleListAllTags,
   examplePageTags,
@@ -252,4 +247,5 @@ export {
   exampleDeleteTag,
   exampleCompleteTagFlow,
   exampleGetPopularTags,
+  runExamples,
 };

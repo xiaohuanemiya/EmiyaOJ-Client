@@ -210,11 +210,6 @@ async function runExamples() {
   // await exampleCompleteCommentFlow(); // 需要认证
 }
 
-// 如果直接运行此文件
-if (require.main === module) {
-  runExamples().catch(console.error);
-}
-
 export {
   exampleListTopComments,
   exampleListCommentReplies,
@@ -224,4 +219,5 @@ export {
   exampleLikeComment,
   exampleDeleteComment,
   exampleCompleteCommentFlow,
+  runExamples,
 };
