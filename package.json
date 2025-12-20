@@ -1,0 +1,29 @@
+{
+  "name": "emiyaoj-blog-client",
+  "version": "1.0.0",
+  "description": "EmiyaOJ Blog System Client - A complete blog system API client with blog posts, comments, and tags management",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "emiyaoj",
+    "blog",
+    "api",
+    "client",
+    "typescript"
+  ],
+  "author": "EmiyaOJ",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "doc",
+    "README.md"
+  ]
+}
