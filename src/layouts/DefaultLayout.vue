@@ -17,6 +17,7 @@
           >
             <el-menu-item index="/">首页</el-menu-item>
             <el-menu-item index="/problems">题库</el-menu-item>
+            <el-menu-item index="/blogs">博客</el-menu-item>
             <el-menu-item index="/submissions">提交记录</el-menu-item>
           </el-menu>
           <div class="user-actions">

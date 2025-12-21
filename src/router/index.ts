@@ -71,6 +71,52 @@ const router = createRouter({
             requiresAuth: true,
             title: '个人中心'
           }
+        },
+        // 博客相关路由
+        {
+          path: 'blogs',
+          name: 'BlogList',
+          component: () => import('@/views/BlogList/index.vue'),
+          meta: {
+            requiresAuth: false,
+            title: '博客列表'
+          }
+        },
+        {
+          path: 'blog/create',
+          name: 'BlogCreate',
+          component: () => import('@/views/BlogEdit/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '发布博客'
+          }
+        },
+        {
+          path: 'blog/edit/:id',
+          name: 'BlogEdit',
+          component: () => import('@/views/BlogEdit/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '编辑博客'
+          }
+        },
+        {
+          path: 'blog/:id',
+          name: 'BlogDetail',
+          component: () => import('@/views/BlogDetail/index.vue'),
+          meta: {
+            requiresAuth: false,
+            title: '博客详情'
+          }
+        },
+        {
+          path: 'blog/user/:uid',
+          name: 'UserBlog',
+          component: () => import('@/views/UserBlog/index.vue'),
+          meta: {
+            requiresAuth: false,
+            title: '用户博客'
+          }
         }
       ]
     }
