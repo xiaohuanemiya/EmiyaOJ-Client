@@ -51,9 +51,12 @@ service.interceptors.response.use(
   },
   (error: AxiosError) => {
     console.error('Response error:', error)
+    console.error('Request URL:', error.config?.url)
+    console.error('Request method:', error.config?.method)
 
     let message = '网络错误'
     if (error.response) {
+      const errorMessage = (error.response.data as any)?.msg || error.message
       switch (error.response.status) {
         case 400:
           message = '请求参数错误'
@@ -66,7 +69,7 @@ service.interceptors.response.use(
           message = '拒绝访问'
           break
         case 404:
-          message = '请求资源不存在'
+          message = errorMessage || '请求资源不存在'
           break
         case 500:
           message = '服务器错误'
@@ -75,10 +78,12 @@ service.interceptors.response.use(
           message = '服务不可用'
           break
         default:
-          message = `连接错误 ${error.response.status}`
+          message = errorMessage || `连接错误 ${error.response.status}`
       }
     } else if (error.code === 'ECONNABORTED') {
       message = '请求超时'
+    } else if (error.message) {
+      message = error.message
     }
 
     ElMessage.error(message)
