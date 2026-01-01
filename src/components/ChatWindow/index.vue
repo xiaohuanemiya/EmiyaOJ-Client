@@ -26,7 +26,7 @@
             <span class="message-time">{{ formatTime(message.timestamp) }}</span>
           </div>
           <div class="message-content">
-            <pre v-if="message.role === 'assistant'">{{ message.content }}</pre>
+            <MarkdownViewer v-if="message.role === 'assistant'" :content="message.content" />
             <span v-else>{{ message.content }}</span>
           </div>
         </div>
@@ -74,6 +74,7 @@ import { ref, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { User, ChatDotRound, Loading } from '@element-plus/icons-vue'
 import { sendChatMessage } from '@/api/chat'
+import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -279,6 +280,7 @@ const formatTime = (timestamp: number) => {
       max-width: 80%;
       word-wrap: break-word;
       white-space: pre-wrap;
+      text-align: left;
 
       pre {
         margin: 0;
