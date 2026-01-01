@@ -32,7 +32,7 @@ const router = createRouter({
           name: 'ProblemList',
           component: () => import('@/views/ProblemList/index.vue'),
           meta: {
-            requiresAuth: false,
+            requiresAuth: true,
             title: '题目列表'
           }
         },
@@ -78,7 +78,7 @@ const router = createRouter({
           name: 'BlogList',
           component: () => import('@/views/BlogList/index.vue'),
           meta: {
-            requiresAuth: false,
+            requiresAuth: true,
             title: '博客列表'
           }
         },
@@ -105,7 +105,7 @@ const router = createRouter({
           name: 'BlogDetail',
           component: () => import('@/views/BlogDetail/index.vue'),
           meta: {
-            requiresAuth: false,
+            requiresAuth: true,
             title: '博客详情'
           }
         },
@@ -114,7 +114,7 @@ const router = createRouter({
           name: 'UserBlog',
           component: () => import('@/views/UserBlog/index.vue'),
           meta: {
-            requiresAuth: false,
+            requiresAuth: true,
             title: '用户博客'
           }
         }

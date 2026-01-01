@@ -88,18 +88,27 @@
           <template #header>
             <div class="editor-header">
               <h3>代码编辑器</h3>
-              <el-select
-                v-model="selectedLanguageId"
-                placeholder="选择语言"
-                style="width: 200px"
-              >
-                <el-option
-                  v-for="lang in languageStore.languages"
-                  :key="lang.id"
-                  :label="lang.name"
-                  :value="lang.id"
-                />
-              </el-select>
+              <div class="header-actions">
+                <el-button
+                  type="primary"
+                  :icon="ChatDotRound"
+                  @click="showChatWindow = true"
+                >
+                  编程助手
+                </el-button>
+                <el-select
+                  v-model="selectedLanguageId"
+                  placeholder="选择语言"
+                  style="width: 200px"
+                >
+                  <el-option
+                    v-for="lang in languageStore.languages"
+                    :key="lang.id"
+                    :label="lang.name"
+                    :value="lang.id"
+                  />
+                </el-select>
+              </div>
             </div>
           </template>
 
@@ -127,6 +136,12 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 对话窗口 -->
+    <chat-window
+      v-model="showChatWindow"
+      :problem-id="problemId"
+    />
   </div>
 </template>
 
@@ -134,11 +149,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { ChatDotRound } from '@element-plus/icons-vue'
 import { useProblemStore } from '@/stores/problem'
 import { useLanguageStore } from '@/stores/language'
 import { useSubmissionStore } from '@/stores/submission'
 import CodeEditor from '@/components/CodeEditor/index.vue'
 import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
+import ChatWindow from '@/components/ChatWindow/index.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -150,6 +167,7 @@ const problemId = Number(route.params.id)
 const selectedLanguageId = ref<number>(1)
 const code = ref('')
 const submitting = ref(false)
+const showChatWindow = ref(false)
 
 const currentProblem = computed(() => problemStore.currentProblem)
 
@@ -300,6 +318,12 @@ onMounted(async () => {
 
     h3 {
       margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
   }
 
