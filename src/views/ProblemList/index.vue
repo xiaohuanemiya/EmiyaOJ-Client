@@ -6,7 +6,7 @@
         <div class="header-content">
           <h2>题目列表</h2>
           <el-input
-            v-model="queryParams.keyword"
+            v-model="queryParams.title"
             placeholder="搜索题目..."
             style="width: 300px"
             clearable
@@ -26,9 +26,9 @@
           <span>难度：</span>
           <el-radio-group v-model="queryParams.difficulty" @change="handleSearch">
             <el-radio-button :value="undefined">全部</el-radio-button>
-            <el-radio-button :value="0">简单</el-radio-button>
-            <el-radio-button :value="1">中等</el-radio-button>
-            <el-radio-button :value="2">困难</el-radio-button>
+            <el-radio-button :value="1">简单</el-radio-button>
+            <el-radio-button :value="2">中等</el-radio-button>
+            <el-radio-button :value="3">困难</el-radio-button>
           </el-radio-group>
         </el-space>
       </div>
@@ -57,19 +57,6 @@
             {{ formatPassRate(row) }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag v-if="row.userStatus === 2" type="success" size="small">
-              已通过
-            </el-tag>
-            <el-tag v-else-if="row.userStatus === 1" type="warning" size="small">
-              尝试过
-            </el-tag>
-            <el-tag v-else type="info" size="small">
-              未尝试
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column label="标签" min-width="200">
           <template #default="{ row }">
             <el-tag
@@ -87,7 +74,7 @@
       <!-- 分页 -->
       <div class="pagination-container">
         <el-pagination
-          v-model:current-page="queryParams.pageNo"
+          v-model:current-page="queryParams.pageNum"
           v-model:page-size="queryParams.pageSize"
           :total="problemStore.total"
           :page-sizes="[10, 20, 50, 100]"
@@ -111,14 +98,14 @@ const router = useRouter()
 const problemStore = useProblemStore()
 
 const queryParams = reactive<ProblemQueryParams>({
-  pageNo: 1,
+  pageNum: 1,
   pageSize: 20,
   difficulty: undefined,
-  keyword: ''
+  title: ''
 })
 
 const handleSearch = () => {
-  queryParams.pageNo = 1
+  queryParams.pageNum = 1
   problemStore.fetchProblems(queryParams)
 }
 
@@ -127,7 +114,7 @@ const handlePageChange = () => {
 }
 
 const handleSizeChange = () => {
-  queryParams.pageNo = 1
+  queryParams.pageNum = 1
   problemStore.fetchProblems(queryParams)
 }
 
@@ -136,12 +123,12 @@ const handleRowClick = (row: any) => {
 }
 
 const getDifficultyType = (difficulty: number) => {
-  const types = ['success', 'warning', 'danger']
+  const types: Record<number, string> = { 1: 'success', 2: 'warning', 3: 'danger' }
   return types[difficulty] || 'info'
 }
 
 const getDifficultyText = (difficulty: number) => {
-  const texts = ['简单', '中等', '困难']
+  const texts: Record<number, string> = { 1: '简单', 2: '中等', 3: '困难' }
   return texts[difficulty] || '未知'
 }
 

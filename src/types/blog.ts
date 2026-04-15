@@ -2,7 +2,7 @@
 import type { PageQuery } from './api'
 
 /**
- * 博客标签
+ * 博客标签（博客标签 VO）
  */
 export interface BlogTag {
   id: string
@@ -11,7 +11,7 @@ export interface BlogTag {
 }
 
 /**
- * 博客信息
+ * 博客信息（博客 VO）
  */
 export interface Blog {
   id: string
@@ -24,7 +24,7 @@ export interface Blog {
 }
 
 /**
- * 评论信息
+ * 评论信息（博客评论 VO）
  */
 export interface Comment {
   id: string
@@ -37,7 +37,7 @@ export interface Comment {
 }
 
 /**
- * 用户博客信息
+ * 用户博客信息（用户博客信息 VO）
  */
 export interface UserBlogInfo {
   userId: string
@@ -48,24 +48,25 @@ export interface UserBlogInfo {
 }
 
 /**
- * 发布博客请求参数
+ * 发布博客请求参数（POST /blog）
  */
 export interface CreateBlogParams {
   title: string
   content: string
-  tagIds: number[]
+  tagIds: string[]
 }
 
 /**
- * 修改博客请求参数
+ * 修改博客请求参数（PUT /blog/{bid}）
  */
 export interface UpdateBlogParams {
+  id?: string
   title: string
   content: string
 }
 
 /**
- * 博客查询参数
+ * 博客查询参数（POST /blog/query）
  */
 export interface BlogQueryParams extends PageQuery {
   title?: string
@@ -73,32 +74,41 @@ export interface BlogQueryParams extends PageQuery {
 }
 
 /**
- * 评论查询参数
+ * 评论分页查询参数（POST /blog/{bid}/comments/query）
  */
-export interface CommentQueryParams extends PageQuery {
-  sortBy?: string
-  isAsc?: boolean
+export interface CommentQueryParams {
+  pageNum?: number
+  pageSize?: number
 }
 
 /**
- * 评论条件查询参数
+ * 评论条件查询参数（POST /blog/comments/query）
  */
 export interface CommentSearchParams {
-  blogId?: number
+  blogId?: string
   fromDay?: string
   toDay?: string
 }
 
 /**
- * 发表评论请求参数
+ * 发表评论请求参数（POST /blog/{bid}/comments）
  */
 export interface CreateCommentParams {
   content: string
 }
 
 /**
- * 用户博客查询参数
+ * 用户博客查询参数（POST /blog/user/{uid}/blogs/query）
  */
 export interface UserBlogQueryParams extends PageQuery {
-  // userId 由路径参数提供
+  userId: string
+}
+
+/**
+ * 用户收藏博客查询参数（POST /blog/user/{uid}/stars/query）
+ */
+export interface UserStarQueryParams {
+  userId?: string
+  pageNo: number
+  pageSize: number
 }

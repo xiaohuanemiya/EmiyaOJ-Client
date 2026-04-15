@@ -18,6 +18,8 @@
     "axios": "^1.13.2",
     "element-plus": "^2.12.0",
     "highlight.js": "^11.11.1",
+    "json-bigint": "^1.0.0",
+    "jwt-decode": "^4.0.0",
     "markdown-it": "^14.1.0",
     "monaco-editor": "^0.50.0",
     "pinia": "^3.0.4",
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@tsconfig/node24": "^24.0.3",
     "@types/highlight.js": "^9.12.4",
+    "@types/json-bigint": "^1.0.4",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.2",

@@ -5,12 +5,13 @@ import type { Problem, ProblemQueryParams } from '@/types/problem'
 
 /**
  * 分页查询题目列表
+ * GET /problem/list
  */
 export const getProblemList = (
   params: ProblemQueryParams
 ): Promise<ApiResponse<PageResult<Problem>>> => {
   return request({
-    url: '/client/problem/page',
+    url: '/problem/list',
     method: 'GET',
     params
   })
@@ -18,10 +19,11 @@ export const getProblemList = (
 
 /**
  * 获取题目详情
+ * GET /problem/{id}
  */
-export const getProblemDetail = (id: number): Promise<ApiResponse<Problem>> => {
+export const getProblemDetail = (id: string | number): Promise<ApiResponse<Problem>> => {
   return request({
-    url: `/client/problem/${id}`,
+    url: `/problem/${id}`,
     method: 'GET'
   })
 }

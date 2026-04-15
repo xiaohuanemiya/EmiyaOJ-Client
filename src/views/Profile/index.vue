@@ -10,8 +10,8 @@
         <el-descriptions-item label="用户名">
           {{ authStore.user?.username }}
         </el-descriptions-item>
-        <el-descriptions-item label="姓名">
-          {{ authStore.user?.name }}
+        <el-descriptions-item label="昵称">
+          {{ authStore.user?.nickname }}
         </el-descriptions-item>
         <el-descriptions-item label="邮箱">
           {{ authStore.user?.email || '未设置' }}

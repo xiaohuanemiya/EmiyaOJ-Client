@@ -11,11 +11,11 @@
 
       <!-- 提交信息 -->
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="题目">
-          {{ currentSubmission?.problemTitle }}
+        <el-descriptions-item label="题目ID">
+          {{ currentSubmission?.problemId }}
         </el-descriptions-item>
-        <el-descriptions-item label="语言">
-          {{ currentSubmission?.languageName }}
+        <el-descriptions-item label="语言ID">
+          {{ currentSubmission?.languageId }}
         </el-descriptions-item>
         <el-descriptions-item label="状态">
           <status-tag :status="currentSubmission?.status" />
@@ -37,10 +37,16 @@
         </el-descriptions-item>
       </el-descriptions>
 
-      <!-- 判题信息 -->
-      <div v-if="currentSubmission?.judgeInfo" class="judge-info-section">
-        <h3>判题信息</h3>
-        <pre>{{ formatJudgeInfo(currentSubmission.judgeInfo) }}</pre>
+      <!-- 错误信息 -->
+      <div v-if="currentSubmission?.errorMessage" class="judge-info-section">
+        <h3>错误信息</h3>
+        <pre>{{ currentSubmission.errorMessage }}</pre>
+      </div>
+
+      <!-- 编译信息 -->
+      <div v-if="currentSubmission?.compileMessage" class="judge-info-section">
+        <h3>编译信息</h3>
+        <pre>{{ currentSubmission.compileMessage }}</pre>
       </div>
     </el-card>
   </div>
@@ -55,16 +61,8 @@ import StatusTag from '@/components/StatusTag/index.vue'
 const route = useRoute()
 const submissionStore = useSubmissionStore()
 
-const submissionId = Number(route.params.id)
+const submissionId = route.params.id as string
 const currentSubmission = computed(() => submissionStore.currentSubmission)
-
-const formatJudgeInfo = (judgeInfo: string) => {
-  try {
-    return JSON.stringify(JSON.parse(judgeInfo), null, 2)
-  } catch {
-    return judgeInfo
-  }
-}
 
 onMounted(() => {
   submissionStore.fetchSubmissionDetail(submissionId)

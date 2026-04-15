@@ -74,8 +74,8 @@
       <!-- 分页 -->
       <div v-if="currentTotal > 0" class="pagination-container">
         <el-pagination
-          v-model:current-page="queryParams.pageNo"
-          v-model:page-size="queryParams.pageSize"
+          v-model:current-page="currentQueryParams.pageNo"
+          v-model:page-size="currentQueryParams.pageSize"
           :total="currentTotal"
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next, jumper"
@@ -92,7 +92,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Calendar } from '@element-plus/icons-vue'
 import { useBlogStore } from '@/stores/blog'
-import type { Blog, UserBlogQueryParams } from '@/types/blog'
+import type { Blog, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
 import { formatDateTime } from '@/utils/format'
 
 const route = useRoute()
@@ -105,9 +105,20 @@ const userInfoLoading = ref(false)
 
 const userInfo = computed(() => blogStore.userBlogInfo)
 
-const queryParams = reactive<UserBlogQueryParams>({
+const blogQueryParams = reactive<UserBlogQueryParams>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
+  userId: route.params.uid as string
+})
+
+const starQueryParams = reactive<UserStarQueryParams>({
+  pageNo: 1,
+  pageSize: 10,
+  userId: route.params.uid as string
+})
+
+const currentQueryParams = computed(() => {
+  return activeTab.value === 'blogs' ? blogQueryParams : starQueryParams
 })
 
 const currentBlogs = computed(() => {
@@ -123,7 +134,11 @@ const currentTotal = computed(() => {
 })
 
 const handleTabChange = () => {
-  queryParams.pageNo = 1
+  if (activeTab.value === 'blogs') {
+    blogQueryParams.pageNo = 1
+  } else {
+    starQueryParams.pageNo = 1
+  }
   fetchBlogs()
 }
 
@@ -132,7 +147,11 @@ const handlePageChange = () => {
 }
 
 const handleSizeChange = () => {
-  queryParams.pageNo = 1
+  if (activeTab.value === 'blogs') {
+    blogQueryParams.pageNo = 1
+  } else {
+    starQueryParams.pageNo = 1
+  }
   fetchBlogs()
 }
 
@@ -163,15 +182,18 @@ const fetchUserInfo = async () => {
 
 const fetchBlogs = () => {
   if (activeTab.value === 'blogs') {
-    blogStore.fetchUserBlogs(userId.value, queryParams)
+    blogQueryParams.userId = userId.value
+    blogStore.fetchUserBlogs(userId.value, blogQueryParams)
   } else {
-    blogStore.fetchUserStarredBlogs(userId.value, queryParams)
+    starQueryParams.userId = userId.value
+    blogStore.fetchUserStarredBlogs(userId.value, starQueryParams)
   }
 }
 
 // 监听 userId 变化
 watch(userId, () => {
-  queryParams.pageNo = 1
+  blogQueryParams.pageNo = 1
+  starQueryParams.pageNo = 1
   activeTab.value = 'blogs'
   fetchUserInfo()
   fetchBlogs()

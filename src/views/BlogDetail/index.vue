@@ -148,7 +148,7 @@
       <!-- 评论分页 -->
       <div v-if="blogStore.commentsTotal > 0" class="comment-pagination">
         <el-pagination
-          v-model:current-page="commentParams.pageNo"
+          v-model:current-page="commentParams.pageNum"
           v-model:page-size="commentParams.pageSize"
           :total="blogStore.commentsTotal"
           :page-sizes="[10, 20, 50]"
@@ -184,15 +184,13 @@ const newComment = ref('')
 const commentSort = ref<'newest' | 'oldest'>('newest')
 
 const commentParams = reactive<CommentQueryParams>({
-  pageNo: 1,
-  pageSize: 10,
-  sortBy: 'create_time',
-  isAsc: false
+  pageNum: 1,
+  pageSize: 10
 })
 
 const isAuthor = computed(() => {
   if (!blogStore.currentBlog || !authStore.user) return false
-  return blogStore.currentBlog.userId === String(authStore.user.id)
+  return blogStore.currentBlog.userId === authStore.user.id
 })
 
 const formatDate = (dateStr: string) => {
@@ -241,14 +239,13 @@ const handleSubmitComment = async () => {
   if (success) {
     newComment.value = ''
     // 刷新评论列表
-    commentParams.pageNo = 1
+    commentParams.pageNum = 1
     blogStore.fetchComments(blogId.value, commentParams)
   }
 }
 
 const handleSortChange = () => {
-  commentParams.isAsc = commentSort.value === 'oldest'
-  commentParams.pageNo = 1
+  commentParams.pageNum = 1
   blogStore.fetchComments(blogId.value, commentParams)
 }
 
@@ -257,14 +254,14 @@ const handleCommentPageChange = () => {
 }
 
 const handleCommentSizeChange = () => {
-  commentParams.pageNo = 1
+  commentParams.pageNum = 1
   blogStore.fetchComments(blogId.value, commentParams)
 }
 
 const canDeleteComment = (comment: Comment) => {
   if (!authStore.user) return false
   // 评论作者或博客作者可以删除评论
-  return comment.userId === String(authStore.user.id) || isAuthor.value
+  return comment.userId === authStore.user.id || isAuthor.value
 }
 
 const handleDeleteComment = async (commentId: string) => {

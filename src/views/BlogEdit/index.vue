@@ -36,7 +36,7 @@
               v-for="tag in blogStore.tags"
               :key="tag.id"
               :label="tag.name"
-              :value="Number(tag.id)"
+              :value="tag.id"
             >
               <span>{{ tag.name }}</span>
               <span style="color: #909399; font-size: 12px; margin-left: 8px">
@@ -107,7 +107,7 @@ const blogId = computed(() => route.params.id as string)
 interface BlogFormData {
   title: string
   content: string
-  tagIds: number[]
+  tagIds: string[]
 }
 
 const blogForm = reactive<BlogFormData>({

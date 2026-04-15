@@ -2,8 +2,12 @@
 import axios from 'axios'
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
-import { getToken } from '@/utils/storage'
+import { getToken, removeToken } from '@/utils/storage'
 import type { ApiResponse } from '@/types/api'
+import JSONBig from 'json-bigint'
+
+// 创建 JSONBig 实例：将超出安全整数范围的数值转为字符串
+const JSONBigString = JSONBig({ storeAsString: true })
 
 // 创建axios实例
 const service: AxiosInstance = axios.create({
@@ -11,7 +15,15 @@ const service: AxiosInstance = axios.create({
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  // 使用 json-bigint 替代默认的 JSON.parse，防止 Long 类型 ID 精度丢失
+  transformResponse: [(data: string) => {
+    try {
+      return JSONBigString.parse(data)
+    } catch {
+      return data
+    }
+  }]
 })
 
 // 请求拦截器
@@ -37,14 +49,15 @@ service.interceptors.response.use(
 
     // 如果code不是200，视为错误
     if (res.code !== 200) {
-      ElMessage.error(res.msg || '请求失败')
+      ElMessage.error(res.message || '请求失败')
 
-      // 401: 未授权，跳转到登录页
+      // 401: 未授权，清除 token 并跳转到登录页
       if (res.code === 401) {
+        removeToken()
         window.location.href = '/login'
       }
 
-      return Promise.reject(new Error(res.msg || '请求失败'))
+      return Promise.reject(new Error(res.message || '请求失败'))
     }
 
     return res as any
@@ -56,13 +69,14 @@ service.interceptors.response.use(
 
     let message = '网络错误'
     if (error.response) {
-      const errorMessage = (error.response.data as any)?.msg || error.message
+      const errorMessage = (error.response.data as any)?.message || error.message
       switch (error.response.status) {
         case 400:
           message = '请求参数错误'
           break
         case 401:
           message = '未授权，请重新登录'
+          removeToken()
           window.location.href = '/login'
           break
         case 403:

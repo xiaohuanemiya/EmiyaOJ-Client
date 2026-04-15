@@ -1,11 +1,10 @@
 // src/types/problem.ts
-import type { PageQuery } from './api'
 
 /**
- * 题目信息
+ * 题目信息（题目详情 VO）
  */
 export interface Problem {
-  id: number
+  id: string
   title: string
   description: string
   inputDescription: string
@@ -13,14 +12,19 @@ export interface Problem {
   sampleInput: string
   sampleOutput: string
   hint?: string
+  difficulty: number
+  difficultyDesc?: string
   timeLimit: number
   memoryLimit: number
-  difficulty: number
+  stackLimit?: number
+  source?: string
+  authorId?: string
   acceptCount: number
   submitCount: number
+  status?: number
   tags?: string[]
-  userStatus?: number
   createTime: string
+  updateTime?: string
 }
 
 /**
@@ -32,10 +36,13 @@ export interface Example {
 }
 
 /**
- * 题目查询参数
+ * 题目查询参数（GET /problem/list 的 query 参数）
  */
-export interface ProblemQueryParams extends PageQuery {
+export interface ProblemQueryParams {
+  pageNum?: number
+  pageSize?: number
+  title?: string
   difficulty?: number
+  tagId?: string
   status?: number
-  keyword?: string
 }

@@ -12,25 +12,28 @@ import type {
   CommentQueryParams,
   CommentSearchParams,
   CreateCommentParams,
-  UserBlogQueryParams
+  UserBlogQueryParams,
+  UserStarQueryParams
 } from '@/types/blog'
 
 /**
  * 查询所有博客
+ * GET /blog
  */
 export const getAllBlogs = (): Promise<ApiResponse<Blog[]>> => {
   return request({
-    url: '/client/blog',
+    url: '/blog',
     method: 'GET'
   })
 }
 
 /**
  * 发布博客
+ * POST /blog
  */
-export const createBlog = (data: CreateBlogParams): Promise<ApiResponse<null>> => {
+export const createBlog = (data: CreateBlogParams): Promise<ApiResponse<string>> => {
   return request({
-    url: '/client/blog',
+    url: '/blog',
     method: 'POST',
     data
   })
@@ -38,46 +41,50 @@ export const createBlog = (data: CreateBlogParams): Promise<ApiResponse<null>> =
 
 /**
  * 分页条件查询博客
+ * POST /blog/query
  */
 export const queryBlogs = (
   data: BlogQueryParams
 ): Promise<ApiResponse<PageResult<Blog>>> => {
   return request({
-    url: '/client/blog/query',
+    url: '/blog/query',
     method: 'POST',
     data
   })
 }
 
 /**
- * 获取指定博客
+ * 获取指定博客信息
+ * GET /blog/{bid}
  */
 export const getBlogDetail = (bid: string | number): Promise<ApiResponse<Blog>> => {
   return request({
-    url: `/client/blog/${bid}`,
+    url: `/blog/${bid}`,
     method: 'GET'
   })
 }
 
 /**
  * 删除博客
+ * DELETE /blog/{bid}
  */
-export const deleteBlog = (bid: string | number): Promise<ApiResponse<null>> => {
+export const deleteBlog = (bid: string | number): Promise<ApiResponse<string>> => {
   return request({
-    url: `/client/blog/${bid}`,
+    url: `/blog/${bid}`,
     method: 'DELETE'
   })
 }
 
 /**
  * 修改博客
+ * PUT /blog/{bid}
  */
 export const updateBlog = (
   bid: string | number,
   data: UpdateBlogParams
-): Promise<ApiResponse<null>> => {
+): Promise<ApiResponse<string>> => {
   return request({
-    url: `/client/blog/${bid}`,
+    url: `/blog/${bid}`,
     method: 'PUT',
     data
   })
@@ -85,13 +92,14 @@ export const updateBlog = (
 
 /**
  * 分页查询博客评论
+ * POST /blog/{bid}/comments/query
  */
 export const queryBlogComments = (
   bid: string | number,
   data: CommentQueryParams
 ): Promise<ApiResponse<PageResult<Comment>>> => {
   return request({
-    url: `/client/blog/${bid}/comments/query`,
+    url: `/blog/${bid}/comments/query`,
     method: 'POST',
     data
   })
@@ -99,13 +107,14 @@ export const queryBlogComments = (
 
 /**
  * 发表评论
+ * POST /blog/{bid}/comments
  */
 export const createComment = (
   bid: string | number,
   data: CreateCommentParams
-): Promise<ApiResponse<null>> => {
+): Promise<ApiResponse<string>> => {
   return request({
-    url: `/client/blog/${bid}/comments`,
+    url: `/blog/${bid}/comments`,
     method: 'POST',
     data
   })
@@ -113,43 +122,47 @@ export const createComment = (
 
 /**
  * 收藏博客
+ * POST /blog/{bid}/star
  */
-export const starBlog = (bid: string | number): Promise<ApiResponse<null>> => {
+export const starBlog = (bid: string | number): Promise<ApiResponse<string>> => {
   return request({
-    url: `/client/blog/${bid}/star`,
+    url: `/blog/${bid}/star`,
     method: 'POST'
   })
 }
 
 /**
  * 取消收藏博客
+ * DELETE /blog/{bid}/star
  */
-export const unstarBlog = (bid: string | number): Promise<ApiResponse<null>> => {
+export const unstarBlog = (bid: string | number): Promise<ApiResponse<string>> => {
   return request({
-    url: `/client/blog/${bid}/star`,
+    url: `/blog/${bid}/star`,
     method: 'DELETE'
   })
 }
 
 /**
  * 查询博客模块用户信息
+ * GET /blog/user/{uid}
  */
 export const getUserBlogInfo = (uid: string | number): Promise<ApiResponse<UserBlogInfo>> => {
   return request({
-    url: `/client/blog/user/${uid}`,
+    url: `/blog/user/${uid}`,
     method: 'GET'
   })
 }
 
 /**
  * 分页查询用户发表的博客
+ * POST /blog/user/{uid}/blogs/query
  */
 export const queryUserBlogs = (
   uid: string | number,
   data: UserBlogQueryParams
 ): Promise<ApiResponse<PageResult<Blog>>> => {
   return request({
-    url: `/client/blog/user/${uid}/blogs/query`,
+    url: `/blog/user/${uid}/blogs/query`,
     method: 'POST',
     data
   })
@@ -157,13 +170,14 @@ export const queryUserBlogs = (
 
 /**
  * 分页查询用户收藏的博客
+ * POST /blog/user/{uid}/stars/query
  */
 export const queryUserStarredBlogs = (
   uid: string | number,
-  data: UserBlogQueryParams
+  data: UserStarQueryParams
 ): Promise<ApiResponse<PageResult<Blog>>> => {
   return request({
-    url: `/client/blog/user/${uid}/stars/query`,
+    url: `/blog/user/${uid}/stars/query`,
     method: 'POST',
     data
   })
@@ -171,22 +185,24 @@ export const queryUserStarredBlogs = (
 
 /**
  * 查询所有标签
+ * GET /blog/tags
  */
 export const getAllTags = (): Promise<ApiResponse<BlogTag[]>> => {
   return request({
-    url: '/client/blog/tags',
+    url: '/blog/tags',
     method: 'GET'
   })
 }
 
 /**
  * 条件查询评论
+ * POST /blog/comments/query
  */
 export const searchComments = (
   data: CommentSearchParams
 ): Promise<ApiResponse<Comment[]>> => {
   return request({
-    url: '/client/blog/comments/query',
+    url: '/blog/comments/query',
     method: 'POST',
     data
   })
@@ -194,20 +210,22 @@ export const searchComments = (
 
 /**
  * 获取指定评论
+ * GET /blog/comments/{cid}
  */
 export const getCommentDetail = (cid: string | number): Promise<ApiResponse<Comment>> => {
   return request({
-    url: `/client/blog/comments/${cid}`,
+    url: `/blog/comments/${cid}`,
     method: 'GET'
   })
 }
 
 /**
  * 删除评论
+ * DELETE /blog/comments/{cid}
  */
-export const deleteComment = (cid: string | number): Promise<ApiResponse<null>> => {
+export const deleteComment = (cid: string | number): Promise<ApiResponse<string>> => {
   return request({
-    url: `/client/blog/comments/${cid}`,
+    url: `/blog/comments/${cid}`,
     method: 'DELETE'
   })
 }

@@ -1,7 +1,7 @@
 // src/stores/blog.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Blog, BlogTag, Comment, UserBlogInfo, BlogQueryParams, CommentQueryParams, UserBlogQueryParams } from '@/types/blog'
+import type { Blog, BlogTag, Comment, UserBlogInfo, BlogQueryParams, CommentQueryParams, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
 import {
   getAllBlogs,
   queryBlogs,
@@ -27,7 +27,6 @@ export const useBlogStore = defineStore('blog', () => {
   const blogs = ref<Blog[]>([])
   const currentBlog = ref<Blog | null>(null)
   const total = ref(0)
-  const pages = ref(0)
   const loading = ref(false)
 
   // Tags state
@@ -37,17 +36,14 @@ export const useBlogStore = defineStore('blog', () => {
   // Comments state
   const comments = ref<Comment[]>([])
   const commentsTotal = ref(0)
-  const commentsPages = ref(0)
   const commentsLoading = ref(false)
 
   // User blog state
   const userBlogInfo = ref<UserBlogInfo | null>(null)
   const userBlogs = ref<Blog[]>([])
   const userBlogsTotal = ref(0)
-  const userBlogsPages = ref(0)
   const userStarredBlogs = ref<Blog[]>([])
   const userStarredTotal = ref(0)
-  const userStarredPages = ref(0)
 
   // Actions - 博客相关
   const fetchAllBlogs = async () => {
@@ -71,7 +67,6 @@ export const useBlogStore = defineStore('blog', () => {
       if (response.code === 200 && response.data) {
         blogs.value = response.data.list
         total.value = response.data.total
-        pages.value = response.data.pages
       }
     } catch (error) {
       console.error('Failed to fetch blogs:', error)
@@ -162,7 +157,6 @@ export const useBlogStore = defineStore('blog', () => {
       if (response.code === 200 && response.data) {
         comments.value = response.data.list
         commentsTotal.value = response.data.total
-        commentsPages.value = response.data.pages
       }
     } catch (error) {
       console.error('Failed to fetch comments:', error)
@@ -236,7 +230,6 @@ export const useBlogStore = defineStore('blog', () => {
       if (response.code === 200 && response.data) {
         userBlogs.value = response.data.list
         userBlogsTotal.value = response.data.total
-        userBlogsPages.value = response.data.pages
       }
     } catch (error) {
       console.error('Failed to fetch user blogs:', error)
@@ -245,14 +238,13 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const fetchUserStarredBlogs = async (userId: string | number, params: UserBlogQueryParams) => {
+  const fetchUserStarredBlogs = async (userId: string | number, params: UserStarQueryParams) => {
     loading.value = true
     try {
       const response = await queryUserStarredBlogs(userId, params)
       if (response.code === 200 && response.data) {
         userStarredBlogs.value = response.data.list
         userStarredTotal.value = response.data.total
-        userStarredPages.value = response.data.pages
       }
     } catch (error) {
       console.error('Failed to fetch user starred blogs:', error)
@@ -270,7 +262,6 @@ export const useBlogStore = defineStore('blog', () => {
   const clearComments = () => {
     comments.value = []
     commentsTotal.value = 0
-    commentsPages.value = 0
   }
 
   return {
@@ -278,21 +269,17 @@ export const useBlogStore = defineStore('blog', () => {
     blogs,
     currentBlog,
     total,
-    pages,
     loading,
     tags,
     tagsLoading,
     comments,
     commentsTotal,
-    commentsPages,
     commentsLoading,
     userBlogInfo,
     userBlogs,
     userBlogsTotal,
-    userBlogsPages,
     userStarredBlogs,
     userStarredTotal,
-    userStarredPages,
 
     // Actions
     fetchAllBlogs,

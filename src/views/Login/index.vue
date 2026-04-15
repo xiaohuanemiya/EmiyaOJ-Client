@@ -88,17 +88,18 @@ const loginRules: FormRules = {
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   
-  await loginFormRef.value.validate(async (valid) => {
-    if (valid) {
-      const success = await authStore.login(loginForm)
-      if (success) {
-        ElMessage.success('登录成功')
-        router.push('/')
-      } else {
-        ElMessage.error('登录失败，请检查用户名和密码')
-      }
+  try {
+    await loginFormRef.value.validate()
+    const success = await authStore.login(loginForm)
+    if (success) {
+      ElMessage.success('登录成功')
+      router.push('/')
+    } else {
+      ElMessage.error('登录失败，请检查用户名和密码')
     }
-  })
+  } catch {
+    // 表单验证失败，不做处理
+  }
 }
 </script>
 

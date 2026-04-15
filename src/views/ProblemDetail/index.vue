@@ -156,6 +156,7 @@ import { useSubmissionStore } from '@/stores/submission'
 import CodeEditor from '@/components/CodeEditor/index.vue'
 import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
 import ChatWindow from '@/components/ChatWindow/index.vue'
+import { JUDGE_STATUS, JUDGE_STATUS_TEXT } from '@/utils/constants'
 
 const route = useRoute()
 const router = useRouter()
@@ -163,8 +164,8 @@ const problemStore = useProblemStore()
 const languageStore = useLanguageStore()
 const submissionStore = useSubmissionStore()
 
-const problemId = Number(route.params.id)
-const selectedLanguageId = ref<number>(1)
+const problemId = route.params.id as string
+const selectedLanguageId = ref<string>('1')
 const code = ref('')
 const submitting = ref(false)
 const showChatWindow = ref(false)
@@ -173,17 +174,17 @@ const currentProblem = computed(() => problemStore.currentProblem)
 
 const getDifficultyType = (difficulty?: number) => {
   if (difficulty === undefined) return 'info'
-  const types = ['success', 'warning', 'danger']
+  const types: Record<number, string> = { 1: 'success', 2: 'warning', 3: 'danger' }
   return types[difficulty] || 'info'
 }
 
 const getDifficultyText = (difficulty?: number) => {
   if (difficulty === undefined) return '未知'
-  const texts = ['简单', '中等', '困难']
+  const texts: Record<number, string> = { 1: '简单', 2: '中等', 3: '困难' }
   return texts[difficulty] || '未知'
 }
 
-const getLanguageMode = (languageId: number) => {
+const getLanguageMode = (languageId: string) => {
   const language = languageStore.languages.find(l => l.id === languageId)
   const modeMap: Record<string, string> = {
     'Java': 'java',
@@ -203,16 +204,16 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    const submissionId = await submissionStore.submitCode({
+    const submission = await submissionStore.submitCode({
       problemId: problemId,
       languageId: selectedLanguageId.value,
       code: code.value
     })
 
-    if (submissionId) {
+    if (submission) {
       ElMessage.success('提交成功，正在判题...')
       // 开始轮询查询提交结果
-      await pollSubmissionResult(submissionId)
+      await pollSubmissionResult(submission.id)
     } else {
       ElMessage.error('提交失败')
       submitting.value = false
@@ -225,7 +226,7 @@ const handleSubmit = async () => {
 }
 
 // 轮询查询提交结果
-const pollSubmissionResult = async (submissionId: number) => {
+const pollSubmissionResult = async (submissionId: string) => {
   const maxAttempts = 60 // 最多轮询60次，相当于60秒
   const pollInterval = 1000 // 每次间隔1秒
   let attempts = 0
@@ -240,14 +241,14 @@ const pollSubmissionResult = async (submissionId: number) => {
       }
 
       // 检查是否已经完成判题（非 Pending 和 Judging 状态）
-      if (submission.status !== 'Pending' && submission.status !== 'Judging') {
+      if (submission.status !== JUDGE_STATUS.PENDING && submission.status !== JUDGE_STATUS.JUDGING) {
         submitting.value = false
         
         // 根据结果显示不同的消息
-        if (submission.status === 'Accepted') {
-          ElMessage.success(`判题完成！状态：${submission.status}`)
+        if (submission.status === JUDGE_STATUS.ACCEPTED) {
+          ElMessage.success(`判题完成！状态：${JUDGE_STATUS_TEXT[submission.status]}`)
         } else {
-          ElMessage.warning(`判题完成！状态：${submission.status}`)
+          ElMessage.warning(`判题完成！状态：${JUDGE_STATUS_TEXT[submission.status] || '未知'}`)
         }
         
         // 跳转到提交详情页面
@@ -287,7 +288,10 @@ const handleReset = () => {
 
 onMounted(async () => {
   await problemStore.fetchProblemDetail(problemId)
-  await languageStore.fetchLanguages()
+  
+  // 预加载常用语言（按 ID 逐个获取，新接口没有 list 接口）
+  const commonLanguageIds = [1, 2, 3, 4, 5]
+  await Promise.all(commonLanguageIds.map(id => languageStore.fetchLanguageDetail(id)))
   
   // 设置默认语言
   if (languageStore.languages.length > 0 && languageStore.languages[0]) {

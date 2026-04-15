@@ -32,8 +32,8 @@
         @row-click="handleRowClick"
       >
         <el-table-column prop="id" label="提交ID" width="150" />
-        <el-table-column prop="problemTitle" label="题目" min-width="200" />
-        <el-table-column prop="languageName" label="语言" width="100" />
+        <el-table-column prop="problemId" label="题目ID" width="120" />
+        <el-table-column prop="languageId" label="语言ID" width="100" />
         <el-table-column label="状态" width="120">
           <template #default="{ row }">
             <status-tag :status="row.status" />
@@ -55,7 +55,7 @@
       <!-- 分页 -->
       <div class="pagination-container">
         <el-pagination
-          v-model:current-page="queryParams.pageNo"
+          v-model:current-page="queryParams.pageNum"
           v-model:page-size="queryParams.pageSize"
           :total="submissionStore.total"
           :page-sizes="[10, 20, 50, 100]"
@@ -79,13 +79,13 @@ const router = useRouter()
 const submissionStore = useSubmissionStore()
 
 const queryParams = reactive<SubmissionQueryParams>({
-  pageNo: 1,
+  pageNum: 1,
   pageSize: 20,
   problemId: undefined
 })
 
 const handleSearch = () => {
-  queryParams.pageNo = 1
+  queryParams.pageNum = 1
   submissionStore.fetchSubmissions(queryParams)
 }
 
@@ -99,7 +99,7 @@ const handlePageChange = () => {
 }
 
 const handleSizeChange = () => {
-  queryParams.pageNo = 1
+  queryParams.pageNum = 1
   submissionStore.fetchSubmissions(queryParams)
 }
 

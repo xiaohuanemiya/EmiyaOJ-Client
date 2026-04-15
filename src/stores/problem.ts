@@ -27,7 +27,7 @@ export const useProblemStore = defineStore('problem', () => {
     }
   }
 
-  const fetchProblemDetail = async (id: number) => {
+  const fetchProblemDetail = async (id: string | number) => {
     loading.value = true
     try {
       const response = await getProblemDetail(id)

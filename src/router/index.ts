@@ -130,6 +130,16 @@ router.beforeEach((to, from, next) => {
   // 设置页面标题
   document.title = `${to.meta.title || 'EmiyaOJ'} - EmiyaOJ`
 
+  // 检查 token 是否过期，过期则清除认证状态
+  if (authStore.token && authStore.isTokenExpired()) {
+    authStore.clearAuth()
+    if (to.meta.requiresAuth) {
+      ElMessage.warning('登录已过期，请重新登录')
+      next({ name: 'Login', query: { redirect: to.fullPath } })
+      return
+    }
+  }
+
   // 检查路由是否需要认证
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     ElMessage.warning('请先登录')

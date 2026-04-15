@@ -8,21 +8,21 @@ export interface ChatMessage {
 }
 
 export interface ChatRequest {
-  problemId?: number
+  problemId?: string
   message: string
   history?: ChatMessage[]
 }
 
 /**
- * 发送聊天消息
+ * 发送消息给 AI 助手
+ * POST /client/chat/send
  */
 export const sendChatMessage = (
   data: ChatRequest
 ): Promise<ApiResponse<string>> => {
   return request({
-    url: '/client/chat/message',
+    url: '/client/chat/send',
     method: 'POST',
     data
   })
 }
-

@@ -84,7 +84,7 @@ interface Message {
 
 interface Props {
   modelValue: boolean
-  problemId?: number
+  problemId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
