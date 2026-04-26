@@ -46,3 +46,24 @@ export interface ProblemQueryParams {
   tagId?: string
   status?: number
 }
+
+/**
+ * 新增/更新题目参数（POST /problem  PUT /problem）
+ */
+export interface ProblemSaveDTO {
+  id?: string            // 更新时必填
+  title: string
+  description: string
+  inputDescription?: string
+  outputDescription?: string
+  sampleInput?: string
+  sampleOutput?: string
+  hint?: string
+  difficulty: number     // 1-简单，2-中等，3-困难
+  timeLimit: number      // CPU 时间限制（毫秒）
+  memoryLimit: number    // 内存限制（MB）
+  stackLimit?: number    // 栈内存限制（MB），默认 128
+  source?: string
+  status?: number        // 0-隐藏，1-公开，默认 1
+  tagIds?: string[]      // 关联标签 ID 列表
+}

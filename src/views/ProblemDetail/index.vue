@@ -289,9 +289,8 @@ const handleReset = () => {
 onMounted(async () => {
   await problemStore.fetchProblemDetail(problemId)
   
-  // 预加载常用语言（按 ID 逐个获取，新接口没有 list 接口）
-  const commonLanguageIds = [1, 2, 3, 4, 5]
-  await Promise.all(commonLanguageIds.map(id => languageStore.fetchLanguageDetail(id)))
+  // 获取启用的编程语言列表
+  await languageStore.fetchLanguages()
   
   // 设置默认语言
   if (languageStore.languages.length > 0 && languageStore.languages[0]) {
