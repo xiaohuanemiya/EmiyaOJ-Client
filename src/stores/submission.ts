@@ -1,13 +1,13 @@
 // src/stores/submission.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Submission, SubmitCodeParams, SubmissionQueryParams, MySubmissionQueryParams } from '@/types/submission'
-import { submitCode as submitCodeApi, getSubmissionList, getMySubmissions, getSubmissionDetail } from '@/api/submission'
+import type { Submission, SubmissionDetailVO, SubmitCodeParams, MySubmissionQueryParams } from '@/types/submission'
+import { submitCode as submitCodeApi, getMySubmissions, getSubmissionDetail } from '@/api/submission'
 
 export const useSubmissionStore = defineStore('submission', () => {
   // State
   const submissions = ref<Submission[]>([])
-  const currentSubmission = ref<Submission | null>(null)
+  const currentSubmission = ref<SubmissionDetailVO | null>(null)
   const total = ref(0)
   const loading = ref(false)
 
@@ -22,21 +22,6 @@ export const useSubmissionStore = defineStore('submission', () => {
     } catch (error) {
       console.error('Failed to submit code:', error)
       return null
-    }
-  }
-
-  const fetchSubmissions = async (params: SubmissionQueryParams) => {
-    loading.value = true
-    try {
-      const response = await getSubmissionList(params)
-      if (response.code === 200 && response.data) {
-        submissions.value = response.data.list
-        total.value = response.data.total
-      }
-    } catch (error) {
-      console.error('Failed to fetch submissions:', error)
-    } finally {
-      loading.value = false
     }
   }
 
@@ -75,7 +60,6 @@ export const useSubmissionStore = defineStore('submission', () => {
     total,
     loading,
     submitCode,
-    fetchSubmissions,
     fetchMySubmissions,
     fetchSubmissionDetail
   }
