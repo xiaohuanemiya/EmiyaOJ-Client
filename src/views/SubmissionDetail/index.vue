@@ -14,6 +14,12 @@
         <el-descriptions-item label="题目ID">
           {{ currentSubmission?.problemId }}
         </el-descriptions-item>
+        <el-descriptions-item label="比赛ID">
+          {{ currentSubmission?.contestId || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="比赛题目ID">
+          {{ currentSubmission?.contestProblemId || '-' }}
+        </el-descriptions-item>
         <el-descriptions-item label="语言ID">
           {{ currentSubmission?.languageId }}
         </el-descriptions-item>

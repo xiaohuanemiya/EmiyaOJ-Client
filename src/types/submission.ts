@@ -7,6 +7,8 @@
 export interface Submission {
   id: string
   problemId: string
+  contestId?: string
+  contestProblemId?: string
   userId: string
   languageId: string
   status: number
@@ -48,6 +50,7 @@ export interface SubmissionCaseResultVO {
  * 代码提交参数（POST /judge/submit）
  */
 export interface SubmitCodeParams {
+  contestId?: string
   problemId: string
   languageId: string
   code: string

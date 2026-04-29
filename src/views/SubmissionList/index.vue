@@ -33,6 +33,11 @@
       >
         <el-table-column prop="id" label="提交ID" width="150" />
         <el-table-column prop="problemId" label="题目ID" width="120" />
+        <el-table-column label="比赛ID" width="120">
+          <template #default="{ row }">
+            {{ row.contestId || '-' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="languageId" label="语言ID" width="100" />
         <el-table-column label="状态" width="120">
           <template #default="{ row }">
