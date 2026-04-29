@@ -8,7 +8,7 @@ import type { TestCase, TestCaseSaveDTO } from '@/types/testCase'
  * GET /test-case/problem/{problemId}
  */
 export const getTestCasesByProblem = (
-  problemId: string | number
+  problemId: string
 ): Promise<ApiResponse<TestCase[]>> => {
   return request({
     url: `/test-case/problem/${problemId}`,
@@ -20,7 +20,7 @@ export const getTestCasesByProblem = (
  * 根据 ID 查询单个测试用例
  * GET /test-case/{id}
  */
-export const getTestCaseDetail = (id: string | number): Promise<ApiResponse<TestCase>> => {
+export const getTestCaseDetail = (id: string): Promise<ApiResponse<TestCase>> => {
   return request({
     url: `/test-case/${id}`,
     method: 'GET'
@@ -44,7 +44,7 @@ export const createTestCase = (data: TestCaseSaveDTO): Promise<ApiResponse<TestC
  * POST /test-case/batch/{problemId}
  */
 export const batchCreateTestCases = (
-  problemId: string | number,
+  problemId: string,
   data: TestCaseSaveDTO[]
 ): Promise<ApiResponse<TestCase[]>> => {
   return request({
@@ -70,7 +70,7 @@ export const updateTestCase = (data: TestCaseSaveDTO): Promise<ApiResponse<TestC
  * 删除单个测试用例（逻辑删除）
  * DELETE /test-case/{id}
  */
-export const deleteTestCase = (id: string | number): Promise<ApiResponse<null>> => {
+export const deleteTestCase = (id: string): Promise<ApiResponse<null>> => {
   return request({
     url: `/test-case/${id}`,
     method: 'DELETE'
@@ -81,7 +81,7 @@ export const deleteTestCase = (id: string | number): Promise<ApiResponse<null>> 
  * 批量删除测试用例
  * DELETE /test-case/batch
  */
-export const batchDeleteTestCases = (ids: (string | number)[]): Promise<ApiResponse<null>> => {
+export const batchDeleteTestCases = (ids: string[]): Promise<ApiResponse<null>> => {
   return request({
     url: '/test-case/batch',
     method: 'DELETE',
@@ -94,7 +94,7 @@ export const batchDeleteTestCases = (ids: (string | number)[]): Promise<ApiRespo
  * DELETE /test-case/problem/{problemId}
  */
 export const deleteTestCasesByProblem = (
-  problemId: string | number
+  problemId: string
 ): Promise<ApiResponse<null>> => {
   return request({
     url: `/test-case/problem/${problemId}`,

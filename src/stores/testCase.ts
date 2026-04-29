@@ -22,7 +22,7 @@ export const useTestCaseStore = defineStore('testCase', () => {
   // Actions
 
   /** 根据题目 ID 查询测试用例列表 */
-  const fetchTestCases = async (problemId: string | number) => {
+  const fetchTestCases = async (problemId: string) => {
     loading.value = true
     try {
       const response = await getTestCasesByProblem(problemId)
@@ -37,7 +37,7 @@ export const useTestCaseStore = defineStore('testCase', () => {
   }
 
   /** 根据 ID 查询单个测试用例 */
-  const fetchTestCaseDetail = async (id: string | number) => {
+  const fetchTestCaseDetail = async (id: string) => {
     loading.value = true
     try {
       const response = await getTestCaseDetail(id)
@@ -74,7 +74,7 @@ export const useTestCaseStore = defineStore('testCase', () => {
 
   /** 批量新增测试用例 */
   const addTestCasesBatch = async (
-    problemId: string | number,
+    problemId: string,
     data: TestCaseSaveDTO[]
   ): Promise<TestCase[]> => {
     loading.value = true
@@ -114,7 +114,7 @@ export const useTestCaseStore = defineStore('testCase', () => {
   }
 
   /** 删除单个测试用例 */
-  const removeTestCase = async (id: string | number): Promise<boolean> => {
+  const removeTestCase = async (id: string): Promise<boolean> => {
     loading.value = true
     try {
       const response = await deleteTestCase(id)
@@ -133,7 +133,7 @@ export const useTestCaseStore = defineStore('testCase', () => {
   }
 
   /** 批量删除测试用例 */
-  const removeTestCasesBatch = async (ids: (string | number)[]): Promise<boolean> => {
+  const removeTestCasesBatch = async (ids: string[]): Promise<boolean> => {
     loading.value = true
     try {
       const response = await batchDeleteTestCases(ids)
@@ -152,7 +152,7 @@ export const useTestCaseStore = defineStore('testCase', () => {
   }
 
   /** 清除指定题目下所有测试用例 */
-  const removeTestCasesByProblem = async (problemId: string | number): Promise<boolean> => {
+  const removeTestCasesByProblem = async (problemId: string): Promise<boolean> => {
     loading.value = true
     try {
       const response = await deleteTestCasesByProblem(problemId)

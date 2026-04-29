@@ -55,7 +55,7 @@ export const useSubmissionStore = defineStore('submission', () => {
     }
   }
 
-  const fetchSubmissionDetail = async (id: string | number) => {
+  const fetchSubmissionDetail = async (id: string) => {
     loading.value = true
     try {
       const response = await getSubmissionDetail(id)

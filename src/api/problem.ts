@@ -21,7 +21,7 @@ export const getProblemList = (
  * 获取题目详情
  * GET /problem/{id}
  */
-export const getProblemDetail = (id: string | number): Promise<ApiResponse<Problem>> => {
+export const getProblemDetail = (id: string): Promise<ApiResponse<Problem>> => {
   return request({
     url: `/problem/${id}`,
     method: 'GET'
@@ -56,7 +56,7 @@ export const updateProblem = (data: ProblemSaveDTO): Promise<ApiResponse<Problem
  * 删除题目（逻辑删除）
  * DELETE /problem/{id}
  */
-export const deleteProblem = (id: string | number): Promise<ApiResponse<null>> => {
+export const deleteProblem = (id: string): Promise<ApiResponse<null>> => {
   return request({
     url: `/problem/${id}`,
     method: 'DELETE'

@@ -30,7 +30,7 @@ export const useProblemStore = defineStore('problem', () => {
   }
 
   /** 获取题目详情 */
-  const fetchProblemDetail = async (id: string | number) => {
+  const fetchProblemDetail = async (id: string) => {
     loading.value = true
     try {
       const response = await getProblemDetail(id)
@@ -85,7 +85,7 @@ export const useProblemStore = defineStore('problem', () => {
   }
 
   /** 删除题目（逻辑删除） */
-  const removeProblem = async (id: string | number): Promise<boolean> => {
+  const removeProblem = async (id: string): Promise<boolean> => {
     loading.value = true
     try {
       const response = await deleteProblem(id)

@@ -100,11 +100,12 @@
                   v-model="selectedLanguageId"
                   placeholder="选择语言"
                   style="width: 200px"
+                  :loading="languageStore.loading"
                 >
                   <el-option
                     v-for="lang in languageStore.languages"
                     :key="lang.id"
-                    :label="lang.name"
+                    :label="getLanguageLabel(lang)"
                     :value="lang.id"
                   />
                 </el-select>
@@ -125,6 +126,7 @@
               type="primary"
               size="large"
               :loading="submitting"
+              :disabled="!selectedLanguageId || languageStore.languages.length === 0"
               @click="handleSubmit"
             >
               提交代码
@@ -157,6 +159,7 @@ import CodeEditor from '@/components/CodeEditor/index.vue'
 import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
 import ChatWindow from '@/components/ChatWindow/index.vue'
 import { JUDGE_STATUS, JUDGE_STATUS_TEXT } from '@/utils/constants'
+import type { Language } from '@/types/language'
 
 const route = useRoute()
 const router = useRouter()
@@ -165,7 +168,7 @@ const languageStore = useLanguageStore()
 const submissionStore = useSubmissionStore()
 
 const problemId = route.params.id as string
-const selectedLanguageId = ref<string>('1')
+const selectedLanguageId = ref('')
 const code = ref('')
 const submitting = ref(false)
 const showChatWindow = ref(false)
@@ -184,19 +187,39 @@ const getDifficultyText = (difficulty?: number) => {
   return texts[difficulty] || '未知'
 }
 
+const getLanguageLabel = (language: Language) => {
+  return language.version ? `${language.name} ${language.version}` : language.name
+}
+
 const getLanguageMode = (languageId: string) => {
-  const language = languageStore.languages.find(l => l.id === languageId)
+  const language = languageStore.languages.find(l => String(l.id) === String(languageId))
   const modeMap: Record<string, string> = {
     'Java': 'java',
     'C': 'c',
     'C++': 'cpp',
     'Python': 'python',
-    'JavaScript': 'javascript'
+    'JavaScript': 'javascript',
+    'java': 'java',
+    'c': 'c',
+    'cpp': 'cpp',
+    'cc': 'cpp',
+    'cxx': 'cpp',
+    'py': 'python',
+    'js': 'javascript',
+    'ts': 'typescript',
+    'go': 'go',
+    'rs': 'rust'
   }
-  return modeMap[language?.name || ''] || 'plaintext'
+  const ext = language?.sourceFileExt?.replace(/^\./, '').toLowerCase()
+  return modeMap[ext || ''] || modeMap[language?.name || ''] || 'plaintext'
 }
 
 const handleSubmit = async () => {
+  if (!selectedLanguageId.value) {
+    ElMessage.warning('请选择语言')
+    return
+  }
+
   if (!code.value.trim()) {
     ElMessage.warning('请输入代码')
     return

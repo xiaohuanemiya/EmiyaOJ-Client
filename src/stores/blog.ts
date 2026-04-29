@@ -75,7 +75,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const fetchBlogDetail = async (id: string | number) => {
+  const fetchBlogDetail = async (id: string) => {
     loading.value = true
     try {
       const response = await getBlogDetail(id)
@@ -106,7 +106,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const editBlog = async (id: string | number, params: UpdateBlogParams) => {
+  const editBlog = async (id: string, params: UpdateBlogParams) => {
     try {
       const response = await updateBlog(id, params)
       if (response.code === 200) {
@@ -120,7 +120,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const removeBlog = async (id: string | number) => {
+  const removeBlog = async (id: string) => {
     try {
       const response = await deleteBlog(id)
       if (response.code === 200) {
@@ -150,7 +150,7 @@ export const useBlogStore = defineStore('blog', () => {
   }
 
   // Actions - 评论相关
-  const fetchComments = async (blogId: string | number, params: CommentQueryParams) => {
+  const fetchComments = async (blogId: string, params: CommentQueryParams) => {
     commentsLoading.value = true
     try {
       const response = await queryBlogComments(blogId, params)
@@ -165,7 +165,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const addComment = async (blogId: string | number, params: CreateCommentParams) => {
+  const addComment = async (blogId: string, params: CreateCommentParams) => {
     try {
       const response = await createComment(blogId, params)
       if (response.code === 200) {
@@ -179,7 +179,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const removeComment = async (commentId: string | number) => {
+  const removeComment = async (commentId: string) => {
     try {
       const response = await deleteComment(commentId)
       if (response.code === 200) {
@@ -194,7 +194,7 @@ export const useBlogStore = defineStore('blog', () => {
   }
 
   // Actions - 收藏相关
-  const toggleStar = async (blogId: string | number, isStarred: boolean) => {
+  const toggleStar = async (blogId: string, isStarred: boolean) => {
     try {
       const response = isStarred ? await unstarBlog(blogId) : await starBlog(blogId)
       if (response.code === 200) {
@@ -209,7 +209,7 @@ export const useBlogStore = defineStore('blog', () => {
   }
 
   // Actions - 用户博客相关
-  const fetchUserBlogInfo = async (userId: string | number) => {
+  const fetchUserBlogInfo = async (userId: string) => {
     try {
       const response = await getUserBlogInfo(userId)
       if (response.code === 200 && response.data) {
@@ -223,7 +223,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const fetchUserBlogs = async (userId: string | number, params: UserBlogQueryParams) => {
+  const fetchUserBlogs = async (userId: string, params: UserBlogQueryParams) => {
     loading.value = true
     try {
       const response = await queryUserBlogs(userId, params)
@@ -238,7 +238,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const fetchUserStarredBlogs = async (userId: string | number, params: UserStarQueryParams) => {
+  const fetchUserStarredBlogs = async (userId: string, params: UserStarQueryParams) => {
     loading.value = true
     try {
       const response = await queryUserStarredBlogs(userId, params)

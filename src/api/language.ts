@@ -29,7 +29,7 @@ export const getLanguageAdminList = (): Promise<ApiResponse<Language[]>> => {
  * 获取语言详情（仅返回启用状态）
  * GET /language/{id}
  */
-export const getLanguageDetail = (id: string | number): Promise<ApiResponse<Language>> => {
+export const getLanguageDetail = (id: string): Promise<ApiResponse<Language>> => {
   return request({
     url: `/language/${id}`,
     method: 'GET'
@@ -40,7 +40,7 @@ export const getLanguageDetail = (id: string | number): Promise<ApiResponse<Lang
  * 管理端根据 ID 查询语言详情（不过滤状态）
  * GET /language/admin/{id}
  */
-export const getLanguageAdminDetail = (id: string | number): Promise<ApiResponse<Language>> => {
+export const getLanguageAdminDetail = (id: string): Promise<ApiResponse<Language>> => {
   return request({
     url: `/language/admin/${id}`,
     method: 'GET'
@@ -63,7 +63,7 @@ export const createLanguage = (data: LanguageSaveDTO): Promise<ApiResponse<Langu
  * 更新编程语言信息
  * PUT /language
  */
-export const updateLanguage = (data: LanguageSaveDTO): Promise<ApiResponse<Language>> => {
+export const updateLanguage = (data: LanguageSaveDTO): Promise<ApiResponse<boolean>> => {
   return request({
     url: '/language',
     method: 'PUT',
@@ -75,7 +75,7 @@ export const updateLanguage = (data: LanguageSaveDTO): Promise<ApiResponse<Langu
  * 启用编程语言
  * PUT /language/{id}/enable
  */
-export const enableLanguage = (id: string | number): Promise<ApiResponse<boolean>> => {
+export const enableLanguage = (id: string): Promise<ApiResponse<boolean>> => {
   return request({
     url: `/language/${id}/enable`,
     method: 'PUT'
@@ -86,7 +86,7 @@ export const enableLanguage = (id: string | number): Promise<ApiResponse<boolean
  * 禁用编程语言
  * PUT /language/{id}/disable
  */
-export const disableLanguage = (id: string | number): Promise<ApiResponse<boolean>> => {
+export const disableLanguage = (id: string): Promise<ApiResponse<boolean>> => {
   return request({
     url: `/language/${id}/disable`,
     method: 'PUT'
@@ -97,7 +97,7 @@ export const disableLanguage = (id: string | number): Promise<ApiResponse<boolea
  * 删除编程语言（物理删除，请谨慎操作）
  * DELETE /language/{id}
  */
-export const deleteLanguage = (id: string | number): Promise<ApiResponse<null>> => {
+export const deleteLanguage = (id: string): Promise<ApiResponse<boolean>> => {
   return request({
     url: `/language/${id}`,
     method: 'DELETE'

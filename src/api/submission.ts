@@ -48,7 +48,7 @@ export const getMySubmissions = (
  * 根据ID查询提交记录
  * GET /submission/{id}
  */
-export const getSubmissionDetail = (id: string | number): Promise<ApiResponse<Submission>> => {
+export const getSubmissionDetail = (id: string): Promise<ApiResponse<Submission>> => {
   return request({
     url: `/submission/${id}`,
     method: 'GET'

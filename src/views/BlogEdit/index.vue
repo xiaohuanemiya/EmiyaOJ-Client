@@ -129,15 +129,7 @@ const formRules = computed<FormRules<BlogFormData>>(() => ({
       trigger: 'blur' 
     }
   ],
-  tagIds: isEdit.value ? [] : [
-    { 
-      required: true, 
-      message: '请选择至少一个标签', 
-      trigger: 'change',
-      type: 'array',
-      min: 1
-    }
-  ]
+  tagIds: []
 }))
 
 const handleSubmit = async () => {

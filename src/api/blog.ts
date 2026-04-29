@@ -57,7 +57,7 @@ export const queryBlogs = (
  * 获取指定博客信息
  * GET /blog/{bid}
  */
-export const getBlogDetail = (bid: string | number): Promise<ApiResponse<Blog>> => {
+export const getBlogDetail = (bid: string): Promise<ApiResponse<Blog>> => {
   return request({
     url: `/blog/${bid}`,
     method: 'GET'
@@ -68,7 +68,7 @@ export const getBlogDetail = (bid: string | number): Promise<ApiResponse<Blog>> 
  * 删除博客
  * DELETE /blog/{bid}
  */
-export const deleteBlog = (bid: string | number): Promise<ApiResponse<string>> => {
+export const deleteBlog = (bid: string): Promise<ApiResponse<string>> => {
   return request({
     url: `/blog/${bid}`,
     method: 'DELETE'
@@ -80,7 +80,7 @@ export const deleteBlog = (bid: string | number): Promise<ApiResponse<string>> =
  * PUT /blog/{bid}
  */
 export const updateBlog = (
-  bid: string | number,
+  bid: string,
   data: UpdateBlogParams
 ): Promise<ApiResponse<string>> => {
   return request({
@@ -95,7 +95,7 @@ export const updateBlog = (
  * POST /blog/{bid}/comments/query
  */
 export const queryBlogComments = (
-  bid: string | number,
+  bid: string,
   data: CommentQueryParams
 ): Promise<ApiResponse<PageResult<Comment>>> => {
   return request({
@@ -110,7 +110,7 @@ export const queryBlogComments = (
  * POST /blog/{bid}/comments
  */
 export const createComment = (
-  bid: string | number,
+  bid: string,
   data: CreateCommentParams
 ): Promise<ApiResponse<string>> => {
   return request({
@@ -124,7 +124,7 @@ export const createComment = (
  * 收藏博客
  * POST /blog/{bid}/star
  */
-export const starBlog = (bid: string | number): Promise<ApiResponse<string>> => {
+export const starBlog = (bid: string): Promise<ApiResponse<string>> => {
   return request({
     url: `/blog/${bid}/star`,
     method: 'POST'
@@ -135,7 +135,7 @@ export const starBlog = (bid: string | number): Promise<ApiResponse<string>> => 
  * 取消收藏博客
  * DELETE /blog/{bid}/star
  */
-export const unstarBlog = (bid: string | number): Promise<ApiResponse<string>> => {
+export const unstarBlog = (bid: string): Promise<ApiResponse<string>> => {
   return request({
     url: `/blog/${bid}/star`,
     method: 'DELETE'
@@ -146,7 +146,7 @@ export const unstarBlog = (bid: string | number): Promise<ApiResponse<string>> =
  * 查询博客模块用户信息
  * GET /blog/user/{uid}
  */
-export const getUserBlogInfo = (uid: string | number): Promise<ApiResponse<UserBlogInfo>> => {
+export const getUserBlogInfo = (uid: string): Promise<ApiResponse<UserBlogInfo>> => {
   return request({
     url: `/blog/user/${uid}`,
     method: 'GET'
@@ -158,7 +158,7 @@ export const getUserBlogInfo = (uid: string | number): Promise<ApiResponse<UserB
  * POST /blog/user/{uid}/blogs/query
  */
 export const queryUserBlogs = (
-  uid: string | number,
+  uid: string,
   data: UserBlogQueryParams
 ): Promise<ApiResponse<PageResult<Blog>>> => {
   return request({
@@ -173,7 +173,7 @@ export const queryUserBlogs = (
  * POST /blog/user/{uid}/stars/query
  */
 export const queryUserStarredBlogs = (
-  uid: string | number,
+  uid: string,
   data: UserStarQueryParams
 ): Promise<ApiResponse<PageResult<Blog>>> => {
   return request({
@@ -212,7 +212,7 @@ export const searchComments = (
  * 获取指定评论
  * GET /blog/comments/{cid}
  */
-export const getCommentDetail = (cid: string | number): Promise<ApiResponse<Comment>> => {
+export const getCommentDetail = (cid: string): Promise<ApiResponse<Comment>> => {
   return request({
     url: `/blog/comments/${cid}`,
     method: 'GET'
@@ -223,7 +223,7 @@ export const getCommentDetail = (cid: string | number): Promise<ApiResponse<Comm
  * 删除评论
  * DELETE /blog/comments/{cid}
  */
-export const deleteComment = (cid: string | number): Promise<ApiResponse<string>> => {
+export const deleteComment = (cid: string): Promise<ApiResponse<string>> => {
   return request({
     url: `/blog/comments/${cid}`,
     method: 'DELETE'

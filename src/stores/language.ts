@@ -60,7 +60,7 @@ export const useLanguageStore = defineStore('language', () => {
   /**
    * 根据 ID 获取语言详情，并缓存到列表中
    */
-  const fetchLanguageDetail = async (id: string | number) => {
+  const fetchLanguageDetail = async (id: string) => {
     loading.value = true
     try {
       const response = await getLanguageDetail(id)
@@ -87,7 +87,7 @@ export const useLanguageStore = defineStore('language', () => {
   /**
    * 根据 ID 从缓存中获取语言，若无缓存则请求接口
    */
-  const getLanguageById = async (id: string | number): Promise<Language | null> => {
+  const getLanguageById = async (id: string): Promise<Language | null> => {
     const strId = String(id)
     const cached = languages.value.find(l => String(l.id) === strId)
     if (cached) return cached
@@ -113,27 +113,47 @@ export const useLanguageStore = defineStore('language', () => {
   }
 
   /** 更新编程语言 */
-  const editLanguage = async (data: LanguageSaveDTO): Promise<Language | null> => {
+  const editLanguage = async (data: LanguageSaveDTO): Promise<boolean> => {
+    if (!data.id) return false
+
     loading.value = true
     try {
       const response = await updateLanguage(data)
       if (response.code === 200 && response.data) {
-        const idx = languages.value.findIndex(l => l.id === data.id)
-        if (idx >= 0) languages.value[idx] = response.data
-        if (currentLanguage.value?.id === data.id) currentLanguage.value = response.data
-        return response.data
+        const strId = String(data.id)
+        const idx = languages.value.findIndex(l => String(l.id) === strId)
+        if (idx >= 0) {
+          const cachedLanguage = languages.value[idx]
+          if (cachedLanguage) {
+            languages.value[idx] = {
+              ...cachedLanguage,
+              ...data,
+              id: strId,
+              status: data.status ?? cachedLanguage.status
+            }
+          }
+        }
+        if (String(currentLanguage.value?.id) === strId && currentLanguage.value) {
+          currentLanguage.value = {
+            ...currentLanguage.value,
+            ...data,
+            id: strId,
+            status: data.status ?? currentLanguage.value.status
+          }
+        }
+        return true
       }
-      return null
+      return false
     } catch (error) {
       console.error('Failed to update language:', error)
-      return null
+      return false
     } finally {
       loading.value = false
     }
   }
 
   /** 启用编程语言 */
-  const toggleLanguageEnable = async (id: string | number, enable: boolean): Promise<boolean> => {
+  const toggleLanguageEnable = async (id: string, enable: boolean): Promise<boolean> => {
     loading.value = true
     try {
       const response = enable ? await enableLanguage(id) : await disableLanguage(id)
@@ -153,7 +173,7 @@ export const useLanguageStore = defineStore('language', () => {
   }
 
   /** 删除编程语言（物理删除） */
-  const removeLanguage = async (id: string | number): Promise<boolean> => {
+  const removeLanguage = async (id: string): Promise<boolean> => {
     loading.value = true
     try {
       const response = await deleteLanguage(id)
