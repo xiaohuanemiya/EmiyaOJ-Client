@@ -31,7 +31,7 @@
           <el-table-column prop="sortOrder" label="#" width="80" />
           <el-table-column label="题目" min-width="220">
             <template #default="{ row }">
-              {{ row.problem?.title || `题目 ${row.problemId}` }}
+              {{ row.problem?.title || '未知题目' }}
             </template>
           </el-table-column>
           <el-table-column label="难度" width="100">

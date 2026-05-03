@@ -17,6 +17,13 @@
                 <el-button :icon="Search" @click="handleSearch" />
               </template>
             </el-input>
+            <el-button
+              :type="isMyFilter ? 'primary' : 'default'"
+              :plain="!isMyFilter"
+              @click="toggleMyProblemSets"
+            >
+              我的题单
+            </el-button>
             <el-button type="primary" @click="router.push('/problem-set/create')">
               创建题单
             </el-button>
@@ -92,14 +99,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue'
+import { computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/auth'
 import { useProblemSetStore } from '@/stores/problemSet'
 import type { ProblemSetQueryParams, ProblemSetVO } from '@/types/problemSet'
 import { formatDateTime } from '@/utils/format'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const problemSetStore = useProblemSetStore()
 
 const queryParams = reactive<ProblemSetQueryParams>({
@@ -110,7 +119,22 @@ const queryParams = reactive<ProblemSetQueryParams>({
   creatorId: undefined
 })
 
+const isMyFilter = computed(() => {
+  return !!queryParams.creatorId && queryParams.creatorId === String(authStore.user?.id)
+})
+
 const formatDate = (value?: string) => (value ? formatDateTime(value) : '-')
+
+const toggleMyProblemSets = () => {
+  if (isMyFilter.value) {
+    // 取消筛选，显示全部
+    queryParams.creatorId = undefined
+  } else {
+    // 筛选当前用户的题单
+    queryParams.creatorId = authStore.user?.id ? String(authStore.user.id) : undefined
+  }
+  handleSearch()
+}
 
 const handleSearch = () => {
   queryParams.pageNum = 1
