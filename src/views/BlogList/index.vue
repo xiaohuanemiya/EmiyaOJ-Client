@@ -28,7 +28,47 @@
       <!-- 筛选条件 -->
       <div class="filter-bar">
         <el-space wrap>
-          <span>发布日期：</span>
+          <span>类型：</span>
+          <el-select
+            v-model="queryParams.blogType"
+            placeholder="博客类型"
+            clearable
+            style="width: 140px"
+            @change="handleSearch"
+          >
+            <el-option label="普通博客" :value="0" />
+            <el-option label="题解" :value="1" />
+          </el-select>
+          <span>标签：</span>
+          <el-select
+            v-model="queryParams.tagId"
+            placeholder="选择标签"
+            clearable
+            style="width: 160px"
+            :loading="blogStore.tagsLoading"
+            @change="handleSearch"
+          >
+            <el-option
+              v-for="tag in blogStore.tags"
+              :key="tag.id"
+              :label="tag.name"
+              :value="Number(tag.id)"
+            />
+          </el-select>
+          <span>排序：</span>
+          <el-select
+            v-model="queryParams.sortBy"
+            placeholder="排序方式"
+            clearable
+            style="width: 140px"
+            @change="handleSearch"
+          >
+            <el-option label="创建时间" value="createTime" />
+            <el-option label="更新时间" value="updateTime" />
+            <el-option label="浏览量" value="viewCount" />
+            <el-option label="点赞量" value="likeCount" />
+          </el-select>
+          <span>日期：</span>
           <el-date-picker
             v-model="queryParams.createTime"
             type="date"
@@ -52,7 +92,12 @@
           @click="handleBlogClick(blog)"
         >
           <div class="blog-header">
-            <h3 class="blog-title">{{ blog.title }}</h3>
+            <h3 class="blog-title">
+              {{ blog.title }}
+              <el-tag v-if="blog.blogType === 1" size="small" type="success" style="margin-left: 8px">
+                题解
+              </el-tag>
+            </h3>
             <div class="blog-tags">
               <el-tag
                 v-for="tag in blog.tags"
@@ -74,6 +119,16 @@
             <span class="blog-author">
               <el-icon><User /></el-icon>
               用户 {{ blog.userId }}
+            </span>
+            <span class="blog-stats">
+              <span class="stat-item">
+                <el-icon><View /></el-icon>
+                {{ blog.viewCount }}
+              </span>
+              <span class="stat-item">
+                <el-icon><Star /></el-icon>
+                {{ blog.likeCount }}
+              </span>
             </span>
           </div>
         </div>
@@ -98,7 +153,7 @@
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Plus, Calendar, User } from '@element-plus/icons-vue'
+import { Search, Plus, Calendar, User, View, Star } from '@element-plus/icons-vue'
 import { useBlogStore } from '@/stores/blog'
 import type { BlogQueryParams } from '@/types/blog'
 import type { Blog } from '@/types/blog'
@@ -111,6 +166,9 @@ const queryParams = reactive<BlogQueryParams>({
   pageNo: 1,
   pageSize: 10,
   title: '',
+  blogType: undefined,
+  tagId: undefined,
+  sortBy: 'createTime',
   createTime: undefined
 })
 
@@ -147,6 +205,11 @@ const truncateContent = (content: string) => {
 const formatDate = (dateStr: string) => {
   return formatDateTime(dateStr)
 }
+
+onMounted(() => {
+  blogStore.fetchTags()
+  blogStore.fetchBlogs(queryParams)
+})
 
 onMounted(() => {
   blogStore.fetchBlogs(queryParams)

@@ -1,40 +1,48 @@
 // src/api/blog.ts
 import request from './request'
+import { useAuthStore } from '@/stores/auth'
 import type { ApiResponse, PageResult } from '@/types/api'
 import type {
   Blog,
   BlogTag,
-  Comment,
-  UserBlogInfo,
+  BlogPicture,
   CreateBlogParams,
-  UpdateBlogParams,
   BlogQueryParams,
-  CommentQueryParams,
-  CommentSearchParams,
-  CreateCommentParams,
-  UserBlogQueryParams,
-  UserStarQueryParams
+  SolutionQueryParams
 } from '@/types/blog'
 
-/**
- * 查询所有博客
- * GET /blog
- */
-export const getAllBlogs = (): Promise<ApiResponse<Blog[]>> => {
-  return request({
-    url: '/blog',
-    method: 'GET'
-  })
+/** 获取当前用户 ID，用于 X-User-Id 请求头 */
+const getUserIdHeader = () => {
+  const authStore = useAuthStore()
+  const userId = authStore.user?.id
+  return userId ? { 'X-User-Id': userId } : {}
 }
 
 /**
  * 发布博客
  * POST /blog
  */
-export const createBlog = (data: CreateBlogParams): Promise<ApiResponse<string>> => {
+export const createBlog = (data: CreateBlogParams): Promise<ApiResponse<null>> => {
   return request({
     url: '/blog',
     method: 'POST',
+    headers: getUserIdHeader(),
+    data
+  })
+}
+
+/**
+ * 发布/更新题解
+ * POST /blog/problems/{problemId}/solutions
+ */
+export const createSolution = (
+  problemId: string,
+  data: Omit<CreateBlogParams, 'blogType'>
+): Promise<ApiResponse<null>> => {
+  return request({
+    url: `/blog/problems/${problemId}/solutions`,
+    method: 'POST',
+    headers: getUserIdHeader(),
     data
   })
 }
@@ -54,13 +62,29 @@ export const queryBlogs = (
 }
 
 /**
- * 获取指定博客信息
+ * 分页查询题解列表
+ * POST /blog/problems/{problemId}/solutions/query
+ */
+export const querySolutions = (
+  problemId: string,
+  data: SolutionQueryParams
+): Promise<ApiResponse<PageResult<Blog>>> => {
+  return request({
+    url: `/blog/problems/${problemId}/solutions/query`,
+    method: 'POST',
+    data
+  })
+}
+
+/**
+ * 获取博客详情
  * GET /blog/{bid}
  */
 export const getBlogDetail = (bid: string): Promise<ApiResponse<Blog>> => {
   return request({
     url: `/blog/${bid}`,
-    method: 'GET'
+    method: 'GET',
+    headers: getUserIdHeader()
   })
 }
 
@@ -68,118 +92,65 @@ export const getBlogDetail = (bid: string): Promise<ApiResponse<Blog>> => {
  * 删除博客
  * DELETE /blog/{bid}
  */
-export const deleteBlog = (bid: string): Promise<ApiResponse<string>> => {
+export const deleteBlog = (bid: string): Promise<ApiResponse<null>> => {
   return request({
     url: `/blog/${bid}`,
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: getUserIdHeader()
   })
 }
 
 /**
- * 修改博客
- * PUT /blog/{bid}
+ * 点赞博客
+ * POST /blog/{bid}/like
  */
-export const updateBlog = (
-  bid: string,
-  data: UpdateBlogParams
-): Promise<ApiResponse<string>> => {
+export const likeBlog = (bid: string): Promise<ApiResponse<null>> => {
   return request({
-    url: `/blog/${bid}`,
-    method: 'PUT',
-    data
-  })
-}
-
-/**
- * 分页查询博客评论
- * POST /blog/{bid}/comments/query
- */
-export const queryBlogComments = (
-  bid: string,
-  data: CommentQueryParams
-): Promise<ApiResponse<PageResult<Comment>>> => {
-  return request({
-    url: `/blog/${bid}/comments/query`,
+    url: `/blog/${bid}/like`,
     method: 'POST',
-    data
+    headers: getUserIdHeader()
   })
 }
 
 /**
- * 发表评论
- * POST /blog/{bid}/comments
+ * 取消点赞博客
+ * DELETE /blog/{bid}/like
  */
-export const createComment = (
-  bid: string,
-  data: CreateCommentParams
-): Promise<ApiResponse<string>> => {
+export const unlikeBlog = (bid: string): Promise<ApiResponse<null>> => {
   return request({
-    url: `/blog/${bid}/comments`,
+    url: `/blog/${bid}/like`,
+    method: 'DELETE',
+    headers: getUserIdHeader()
+  })
+}
+
+/**
+ * 上传图片
+ * POST /blog/images (multipart/form-data)
+ */
+export const uploadImage = (file: File): Promise<ApiResponse<BlogPicture>> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({
+    url: '/blog/images',
     method: 'POST',
-    data
+    headers: {
+      ...getUserIdHeader(),
+      'Content-Type': 'multipart/form-data'
+    },
+    data: formData
   })
 }
 
 /**
- * 收藏博客
- * POST /blog/{bid}/star
+ * 删除上传的图片
+ * DELETE /blog/images/{id}
  */
-export const starBlog = (bid: string): Promise<ApiResponse<string>> => {
+export const deleteImage = (id: string): Promise<ApiResponse<null>> => {
   return request({
-    url: `/blog/${bid}/star`,
-    method: 'POST'
-  })
-}
-
-/**
- * 取消收藏博客
- * DELETE /blog/{bid}/star
- */
-export const unstarBlog = (bid: string): Promise<ApiResponse<string>> => {
-  return request({
-    url: `/blog/${bid}/star`,
-    method: 'DELETE'
-  })
-}
-
-/**
- * 查询博客模块用户信息
- * GET /blog/user/{uid}
- */
-export const getUserBlogInfo = (uid: string): Promise<ApiResponse<UserBlogInfo>> => {
-  return request({
-    url: `/blog/user/${uid}`,
-    method: 'GET'
-  })
-}
-
-/**
- * 分页查询用户发表的博客
- * POST /blog/user/{uid}/blogs/query
- */
-export const queryUserBlogs = (
-  uid: string,
-  data: UserBlogQueryParams
-): Promise<ApiResponse<PageResult<Blog>>> => {
-  return request({
-    url: `/blog/user/${uid}/blogs/query`,
-    method: 'POST',
-    data
-  })
-}
-
-/**
- * 分页查询用户收藏的博客
- * POST /blog/user/{uid}/stars/query
- */
-export const queryUserStarredBlogs = (
-  uid: string,
-  data: UserStarQueryParams
-): Promise<ApiResponse<PageResult<Blog>>> => {
-  return request({
-    url: `/blog/user/${uid}/stars/query`,
-    method: 'POST',
-    data
+    url: `/blog/images/${id}`,
+    method: 'DELETE',
+    headers: getUserIdHeader()
   })
 }
 
@@ -191,41 +162,5 @@ export const getAllTags = (): Promise<ApiResponse<BlogTag[]>> => {
   return request({
     url: '/blog/tags',
     method: 'GET'
-  })
-}
-
-/**
- * 条件查询评论
- * POST /blog/comments/query
- */
-export const searchComments = (
-  data: CommentSearchParams
-): Promise<ApiResponse<Comment[]>> => {
-  return request({
-    url: '/blog/comments/query',
-    method: 'POST',
-    data
-  })
-}
-
-/**
- * 获取指定评论
- * GET /blog/comments/{cid}
- */
-export const getCommentDetail = (cid: string): Promise<ApiResponse<Comment>> => {
-  return request({
-    url: `/blog/comments/${cid}`,
-    method: 'GET'
-  })
-}
-
-/**
- * 删除评论
- * DELETE /blog/comments/{cid}
- */
-export const deleteComment = (cid: string): Promise<ApiResponse<string>> => {
-  return request({
-    url: `/blog/comments/${cid}`,
-    method: 'DELETE'
   })
 }

@@ -4,7 +4,7 @@
     <el-card v-loading="loading">
       <template #header>
         <div class="header-content">
-          <h2>{{ isEdit ? '编辑博客' : '发布博客' }}</h2>
+          <h2>发布博客</h2>
         </div>
       </template>
 
@@ -24,7 +24,14 @@
           />
         </el-form-item>
 
-        <el-form-item v-if="!isEdit" label="标签" prop="tagIds">
+        <el-form-item label="类型" prop="blogType">
+          <el-radio-group v-model="blogForm.blogType">
+            <el-radio :value="0">普通博客</el-radio>
+            <el-radio :value="1">题解</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="标签" prop="tagIds">
           <el-select
             v-model="blogForm.tagIds"
             multiple
@@ -62,7 +69,7 @@
                 type="textarea"
                 :rows="20"
                 placeholder="请输入博客内容（支持 Markdown 格式）"
-                :maxlength="isEdit ? 10000 : 1000"
+                maxlength="10000"
                 show-word-limit
               />
             </div>
@@ -74,9 +81,46 @@
           </div>
         </el-form-item>
 
+        <!-- 图片上传 -->
+        <el-form-item label="图片附件">
+          <div class="upload-section">
+            <el-upload
+              :http-request="handleUploadImage"
+              :show-file-list="false"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+            >
+              <el-button type="primary" :loading="uploading">
+                上传图片
+              </el-button>
+            </el-upload>
+            <div v-if="uploadedPictures.length > 0" class="uploaded-list">
+              <div
+                v-for="pic in uploadedPictures"
+                :key="pic.id"
+                class="uploaded-item"
+              >
+                <el-image
+                  :src="pic.url"
+                  fit="cover"
+                  style="width: 100px; height: 80px; border-radius: 4px"
+                  :preview-src-list="[pic.url]"
+                />
+                <span class="uploaded-name">{{ pic.originalFilename }}</span>
+                <el-button
+                  type="danger"
+                  size="small"
+                  text
+                  :icon="Delete"
+                  @click="handleRemovePicture(pic.id)"
+                />
+              </div>
+            </div>
+          </div>
+        </el-form-item>
+
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="handleSubmit">
-            {{ isEdit ? '保存修改' : '发布博客' }}
+            发布博客
           </el-button>
           <el-button @click="handleCancel">取消</el-button>
         </el-form-item>
@@ -87,34 +131,40 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import type { FormInstance, FormRules } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { Delete } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules, UploadRequestOptions } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useBlogStore } from '@/stores/blog'
+import type { BlogPicture } from '@/types/blog'
 import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
 
-const route = useRoute()
 const router = useRouter()
 const blogStore = useBlogStore()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
+const uploading = ref(false)
 const editorMode = ref<'edit' | 'preview' | 'split'>('edit')
-
-const isEdit = computed(() => route.name === 'BlogEdit')
-const blogId = computed(() => route.params.id as string)
 
 interface BlogFormData {
   title: string
   content: string
+  blogType: number
   tagIds: string[]
+  pictureIds: string[]
 }
 
 const blogForm = reactive<BlogFormData>({
   title: '',
   content: '',
-  tagIds: []
+  blogType: 0,
+  tagIds: [],
+  pictureIds: []
 })
+
+const uploadedPictures = ref<BlogPicture[]>([])
 
 const formRules = computed<FormRules<BlogFormData>>(() => ({
   title: [
@@ -123,14 +173,34 @@ const formRules = computed<FormRules<BlogFormData>>(() => ({
   ],
   content: [
     { required: true, message: '请输入博客内容', trigger: 'blur' },
-    { 
-      max: isEdit.value ? 10000 : 1000, 
-      message: `内容不能超过${isEdit.value ? 10000 : 1000}个字符`, 
-      trigger: 'blur' 
-    }
+    { max: 10000, message: '内容不能超过10000个字符', trigger: 'blur' }
   ],
-  tagIds: []
+  blogType: [],
+  tagIds: [],
+  pictureIds: []
 }))
+
+const handleUploadImage = async (options: UploadRequestOptions) => {
+  uploading.value = true
+  try {
+    const picture = await blogStore.addImage(options.file as File)
+    if (picture) {
+      uploadedPictures.value.push(picture)
+      blogForm.pictureIds.push(picture.id)
+      ElMessage.success('图片上传成功')
+    }
+  } finally {
+    uploading.value = false
+  }
+}
+
+const handleRemovePicture = async (picId: string) => {
+  const success = await blogStore.removeImage(picId)
+  if (success) {
+    uploadedPictures.value = uploadedPictures.value.filter((p) => p.id !== picId)
+    blogForm.pictureIds = blogForm.pictureIds.filter((id) => id !== picId)
+  }
+}
 
 const handleSubmit = async () => {
   if (!formRef.value) return
@@ -140,27 +210,16 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    let success = false
-    
-    if (isEdit.value) {
-      success = await blogStore.editBlog(blogId.value, {
-        title: blogForm.title,
-        content: blogForm.content
-      })
-    } else {
-      success = await blogStore.addBlog({
-        title: blogForm.title,
-        content: blogForm.content,
-        tagIds: blogForm.tagIds
-      })
-    }
+    const success = await blogStore.addBlog({
+      title: blogForm.title,
+      content: blogForm.content,
+      blogType: blogForm.blogType,
+      tagIds: blogForm.tagIds,
+      pictureIds: blogForm.pictureIds
+    })
     
     if (success) {
-      if (isEdit.value) {
-        router.push(`/blog/${blogId.value}`)
-      } else {
-        router.push('/blogs')
-      }
+      router.push('/blogs')
     }
   } finally {
     submitting.value = false
@@ -171,31 +230,8 @@ const handleCancel = () => {
   router.back()
 }
 
-const loadBlogDetail = async () => {
-  if (!isEdit.value) return
-  
-  loading.value = true
-  try {
-    const blog = await blogStore.fetchBlogDetail(blogId.value)
-    if (blog) {
-      blogForm.title = blog.title
-      blogForm.content = blog.content
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(async () => {
-  // 加载标签列表
-  if (!isEdit.value) {
-    blogStore.fetchTags()
-  }
-  
-  // 如果是编辑模式，加载博客详情
-  if (isEdit.value) {
-    await loadBlogDetail()
-  }
+onMounted(() => {
+  blogStore.fetchTags()
 })
 </script>
 
@@ -249,5 +285,35 @@ onMounted(async () => {
   min-height: 400px;
   max-height: 500px;
   overflow-y: auto;
+}
+
+.upload-section {
+  width: 100%;
+}
+
+.uploaded-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.uploaded-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.uploaded-name {
+  font-size: 12px;
+  color: #606266;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

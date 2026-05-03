@@ -146,15 +146,6 @@ const router = createRouter({
           }
         },
         {
-          path: 'blog/edit/:id',
-          name: 'BlogEdit',
-          component: () => import('@/views/BlogEdit/index.vue'),
-          meta: {
-            requiresAuth: true,
-            title: '编辑博客'
-          }
-        },
-        {
           path: 'blog/:id',
           name: 'BlogDetail',
           component: () => import('@/views/BlogDetail/index.vue'),

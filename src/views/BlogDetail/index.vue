@@ -6,7 +6,12 @@
         <template #header>
           <div class="blog-header">
             <div class="header-left">
-              <h1 class="blog-title">{{ blogStore.currentBlog.title }}</h1>
+              <h1 class="blog-title">
+                {{ blogStore.currentBlog.title }}
+                <el-tag v-if="blogStore.currentBlog.blogType === 1" size="default" type="success" style="margin-left: 12px">
+                  题解
+                </el-tag>
+              </h1>
               <div class="blog-meta">
                 <span class="meta-item">
                   <el-icon><User /></el-icon>
@@ -25,23 +30,26 @@
                   <el-icon><Edit /></el-icon>
                   更新于 {{ formatDate(blogStore.currentBlog.updateTime) }}
                 </span>
+                <span class="meta-item">
+                  <el-icon><View /></el-icon>
+                  {{ blogStore.currentBlog.viewCount }} 阅读
+                </span>
+                <span v-if="blogStore.currentBlog.problemId" class="meta-item">
+                  <el-icon><Link /></el-icon>
+                  关联题目 #{{ blogStore.currentBlog.problemId }}
+                  <template v-if="blogStore.currentBlog.problemTitle">
+                    {{ blogStore.currentBlog.problemTitle }}
+                  </template>
+                </span>
               </div>
             </div>
             <div class="header-right">
               <el-button
-                :type="isStarred ? 'warning' : 'default'"
+                :type="blogStore.currentBlog.liked ? 'warning' : 'default'"
                 :icon="Star"
-                @click="handleToggleStar"
+                @click="handleToggleLike"
               >
-                {{ isStarred ? '已收藏' : '收藏' }}
-              </el-button>
-              <el-button
-                v-if="isAuthor"
-                type="primary"
-                :icon="Edit"
-                @click="handleEdit"
-              >
-                编辑
+                {{ blogStore.currentBlog.liked ? '已点赞' : '点赞' }} ({{ blogStore.currentBlog.likeCount }})
               </el-button>
               <el-button
                 v-if="isAuthor"
@@ -72,105 +80,38 @@
         <div class="blog-body">
           <MarkdownViewer :content="blogStore.currentBlog.content" />
         </div>
+
+        <!-- 图片附件 -->
+        <div v-if="blogStore.currentBlog.pictures && blogStore.currentBlog.pictures.length > 0" class="blog-pictures">
+          <h4>相关图片</h4>
+          <div class="pictures-grid">
+            <el-image
+              v-for="pic in blogStore.currentBlog.pictures"
+              :key="pic.id"
+              :src="pic.url"
+              :alt="pic.originalFilename"
+              fit="cover"
+              class="picture-item"
+              :preview-src-list="[pic.url]"
+              :initial-index="0"
+            />
+          </div>
+        </div>
       </el-card>
 
       <el-empty v-else-if="!blogStore.loading" description="博客不存在" />
     </div>
-
-    <!-- 评论区 -->
-    <el-card v-if="blogStore.currentBlog" class="comments-card">
-      <template #header>
-        <div class="comments-header">
-          <h3>评论 ({{ blogStore.commentsTotal }})</h3>
-        </div>
-      </template>
-
-      <!-- 发表评论 -->
-      <div class="comment-form">
-        <el-input
-          v-model="newComment"
-          type="textarea"
-          :rows="3"
-          placeholder="写下你的评论..."
-          maxlength="200"
-          show-word-limit
-        />
-        <el-button
-          type="primary"
-          style="margin-top: 12px"
-          :disabled="!newComment.trim()"
-          @click="handleSubmitComment"
-        >
-          发表评论
-        </el-button>
-      </div>
-
-      <!-- 评论排序 -->
-      <div class="comment-sort">
-        <el-radio-group v-model="commentSort" @change="handleSortChange">
-          <el-radio-button value="newest">最新</el-radio-button>
-          <el-radio-button value="oldest">最早</el-radio-button>
-        </el-radio-group>
-      </div>
-
-      <!-- 评论列表 -->
-      <div v-loading="blogStore.commentsLoading" class="comment-list">
-        <el-empty v-if="blogStore.comments.length === 0" description="暂无评论" />
-        
-        <div
-          v-for="comment in blogStore.comments"
-          :key="comment.id"
-          class="comment-item"
-        >
-          <div class="comment-header">
-            <div class="comment-user">
-              <el-avatar :size="36">{{ comment.nickname?.charAt(0) || comment.username?.charAt(0) || 'U' }}</el-avatar>
-              <div class="user-info">
-                <span class="username">{{ comment.nickname || comment.username }}</span>
-                <span class="comment-time">{{ formatDate(comment.createTime) }}</span>
-              </div>
-            </div>
-            <el-button
-              v-if="canDeleteComment(comment)"
-              type="danger"
-              text
-              size="small"
-              :icon="Delete"
-              @click="handleDeleteComment(comment.id)"
-            >
-              删除
-            </el-button>
-          </div>
-          <div class="comment-content">{{ comment.content }}</div>
-        </div>
-      </div>
-
-      <!-- 评论分页 -->
-      <div v-if="blogStore.commentsTotal > 0" class="comment-pagination">
-        <el-pagination
-          v-model:current-page="commentParams.pageNum"
-          v-model:page-size="commentParams.pageSize"
-          :total="blogStore.commentsTotal"
-          :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next"
-          @current-change="handleCommentPageChange"
-          @size-change="handleCommentSizeChange"
-        />
-      </div>
-    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { User, Calendar, Edit, Delete, Star } from '@element-plus/icons-vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { User, Calendar, Edit, Delete, Star, View, Link } from '@element-plus/icons-vue'
+import { ElMessageBox } from 'element-plus'
 import { useBlogStore } from '@/stores/blog'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/format'
-import type { CommentQueryParams } from '@/types/blog'
-import type { Comment } from '@/types/blog'
 import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
 
 const route = useRoute()
@@ -179,14 +120,6 @@ const blogStore = useBlogStore()
 const authStore = useAuthStore()
 
 const blogId = computed(() => route.params.id as string)
-const isStarred = ref(false)
-const newComment = ref('')
-const commentSort = ref<'newest' | 'oldest'>('newest')
-
-const commentParams = reactive<CommentQueryParams>({
-  pageNum: 1,
-  pageSize: 10
-})
 
 const isAuthor = computed(() => {
   if (!blogStore.currentBlog || !authStore.user) return false
@@ -201,15 +134,9 @@ const handleAuthorClick = (userId: string) => {
   router.push(`/blog/user/${userId}`)
 }
 
-const handleToggleStar = async () => {
-  const success = await blogStore.toggleStar(blogId.value, isStarred.value)
-  if (success) {
-    isStarred.value = !isStarred.value
-  }
-}
-
-const handleEdit = () => {
-  router.push(`/blog/edit/${blogId.value}`)
+const handleToggleLike = async () => {
+  if (!blogStore.currentBlog) return
+  await blogStore.toggleLike(blogId.value, blogStore.currentBlog.liked)
 }
 
 const handleDelete = async () => {
@@ -229,68 +156,12 @@ const handleDelete = async () => {
   }
 }
 
-const handleSubmitComment = async () => {
-  if (!newComment.value.trim()) return
-  
-  const success = await blogStore.addComment(blogId.value, {
-    content: newComment.value.trim()
-  })
-  
-  if (success) {
-    newComment.value = ''
-    // 刷新评论列表
-    commentParams.pageNum = 1
-    blogStore.fetchComments(blogId.value, commentParams)
-  }
-}
-
-const handleSortChange = () => {
-  commentParams.pageNum = 1
-  blogStore.fetchComments(blogId.value, commentParams)
-}
-
-const handleCommentPageChange = () => {
-  blogStore.fetchComments(blogId.value, commentParams)
-}
-
-const handleCommentSizeChange = () => {
-  commentParams.pageNum = 1
-  blogStore.fetchComments(blogId.value, commentParams)
-}
-
-const canDeleteComment = (comment: Comment) => {
-  if (!authStore.user) return false
-  // 评论作者或博客作者可以删除评论
-  return comment.userId === authStore.user.id || isAuthor.value
-}
-
-const handleDeleteComment = async (commentId: string) => {
-  try {
-    await ElMessageBox.confirm('确定要删除这条评论吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    
-    const success = await blogStore.removeComment(commentId)
-    if (success) {
-      blogStore.fetchComments(blogId.value, commentParams)
-    }
-  } catch {
-    // 用户取消
-  }
-}
-
 onMounted(async () => {
   await blogStore.fetchBlogDetail(blogId.value)
-  if (blogStore.currentBlog) {
-    blogStore.fetchComments(blogId.value, commentParams)
-  }
 })
 
 onUnmounted(() => {
   blogStore.clearCurrentBlog()
-  blogStore.clearComments()
 })
 </script>
 
@@ -360,74 +231,28 @@ onUnmounted(() => {
   color: #303133;
 }
 
-.comments-card {
-  margin-top: 20px;
+.blog-pictures {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e7ed;
 }
 
-.comments-header h3 {
-  margin: 0;
-}
-
-.comment-form {
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e4e7ed;
-}
-
-.comment-sort {
-  padding: 16px 0;
-}
-
-.comment-list {
-  min-height: 200px;
-}
-
-.comment-item {
-  padding: 16px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.comment-item:last-child {
-  border-bottom: none;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.comment-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.username {
-  font-weight: 500;
+.blog-pictures h4 {
+  margin: 0 0 16px 0;
   color: #303133;
 }
 
-.comment-time {
-  font-size: 12px;
-  color: #909399;
+.pictures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
 }
 
-.comment-content {
-  padding-left: 48px;
-  color: #606266;
-  line-height: 1.6;
-  word-break: break-word;
-}
-
-.comment-pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
+.picture-item {
+  width: 100%;
+  height: 150px;
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+  cursor: pointer;
 }
 </style>

@@ -3,23 +3,13 @@
   <div class="user-blog-container">
     <!-- 用户信息卡片 -->
     <el-card class="user-info-card">
-      <div v-loading="userInfoLoading" class="user-info">
+      <div class="user-info">
         <el-avatar :size="80" class="user-avatar">
-          {{ userInfo?.nickname?.charAt(0) || userInfo?.username?.charAt(0) || 'U' }}
+          {{ userId?.charAt(0) || 'U' }}
         </el-avatar>
         <div class="user-details">
-          <h2 class="user-name">{{ userInfo?.nickname || userInfo?.username || '用户' }}</h2>
-          <p class="user-username">@{{ userInfo?.username || userId }}</p>
-          <div class="user-stats">
-            <div class="stat-item">
-              <span class="stat-value">{{ userInfo?.blogCount || 0 }}</span>
-              <span class="stat-label">博客</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value">{{ userInfo?.starCount || 0 }}</span>
-              <span class="stat-label">收藏</span>
-            </div>
-          </div>
+          <h2 class="user-name">用户 {{ userId }}</h2>
+          <p class="user-username">@{{ userId }}</p>
         </div>
       </div>
     </el-card>
@@ -28,27 +18,29 @@
     <el-card class="blog-list-card">
       <template #header>
         <div class="card-header">
-          <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-            <el-tab-pane label="发布的博客" name="blogs" />
-            <el-tab-pane label="收藏的博客" name="stars" />
-          </el-tabs>
+          <h3>发布的博客</h3>
         </div>
       </template>
 
       <div v-loading="blogStore.loading" class="blog-list">
         <el-empty 
-          v-if="currentBlogs.length === 0" 
-          :description="activeTab === 'blogs' ? '暂无发布的博客' : '暂无收藏的博客'" 
+          v-if="blogStore.blogs.length === 0" 
+          description="暂无博客" 
         />
         
         <div
-          v-for="blog in currentBlogs"
+          v-for="blog in blogStore.blogs"
           :key="blog.id"
           class="blog-item"
           @click="handleBlogClick(blog)"
         >
           <div class="blog-header">
-            <h3 class="blog-title">{{ blog.title }}</h3>
+            <h3 class="blog-title">
+              {{ blog.title }}
+              <el-tag v-if="blog.blogType === 1" size="small" type="success" style="margin-left: 8px">
+                题解
+              </el-tag>
+            </h3>
             <div class="blog-tags">
               <el-tag
                 v-for="tag in blog.tags"
@@ -67,16 +59,26 @@
               <el-icon><Calendar /></el-icon>
               {{ formatDate(blog.createTime) }}
             </span>
+            <span class="blog-stats">
+              <span class="stat-item">
+                <el-icon><View /></el-icon>
+                {{ blog.viewCount }}
+              </span>
+              <span class="stat-item">
+                <el-icon><Star /></el-icon>
+                {{ blog.likeCount }}
+              </span>
+            </span>
           </div>
         </div>
       </div>
 
       <!-- 分页 -->
-      <div v-if="currentTotal > 0" class="pagination-container">
+      <div v-if="blogStore.total > 0" class="pagination-container">
         <el-pagination
-          v-model:current-page="currentQueryParams.pageNo"
-          v-model:page-size="currentQueryParams.pageSize"
-          :total="currentTotal"
+          v-model:current-page="queryParams.pageNo"
+          v-model:page-size="queryParams.pageSize"
+          :total="blogStore.total"
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next, jumper"
           @current-change="handlePageChange"
@@ -88,11 +90,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Calendar } from '@element-plus/icons-vue'
+import { Calendar, View, Star } from '@element-plus/icons-vue'
 import { useBlogStore } from '@/stores/blog'
-import type { Blog, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
+import type { Blog, BlogQueryParams } from '@/types/blog'
 import { formatDateTime } from '@/utils/format'
 
 const route = useRoute()
@@ -100,59 +102,19 @@ const router = useRouter()
 const blogStore = useBlogStore()
 
 const userId = computed(() => route.params.uid as string)
-const activeTab = ref<'blogs' | 'stars'>('blogs')
-const userInfoLoading = ref(false)
 
-const userInfo = computed(() => blogStore.userBlogInfo)
-
-const blogQueryParams = reactive<UserBlogQueryParams>({
+const queryParams = reactive<BlogQueryParams>({
   pageNo: 1,
-  pageSize: 10,
-  userId: route.params.uid as string
+  pageSize: 10
 })
-
-const starQueryParams = reactive<UserStarQueryParams>({
-  pageNo: 1,
-  pageSize: 10,
-  userId: route.params.uid as string
-})
-
-const currentQueryParams = computed(() => {
-  return activeTab.value === 'blogs' ? blogQueryParams : starQueryParams
-})
-
-const currentBlogs = computed(() => {
-  return activeTab.value === 'blogs' 
-    ? blogStore.userBlogs 
-    : blogStore.userStarredBlogs
-})
-
-const currentTotal = computed(() => {
-  return activeTab.value === 'blogs' 
-    ? blogStore.userBlogsTotal 
-    : blogStore.userStarredTotal
-})
-
-const handleTabChange = () => {
-  if (activeTab.value === 'blogs') {
-    blogQueryParams.pageNo = 1
-  } else {
-    starQueryParams.pageNo = 1
-  }
-  fetchBlogs()
-}
 
 const handlePageChange = () => {
-  fetchBlogs()
+  blogStore.fetchBlogs(queryParams)
 }
 
 const handleSizeChange = () => {
-  if (activeTab.value === 'blogs') {
-    blogQueryParams.pageNo = 1
-  } else {
-    starQueryParams.pageNo = 1
-  }
-  fetchBlogs()
+  queryParams.pageNo = 1
+  blogStore.fetchBlogs(queryParams)
 }
 
 const handleBlogClick = (blog: Blog) => {
@@ -171,32 +133,14 @@ const formatDate = (dateStr: string) => {
   return formatDateTime(dateStr)
 }
 
-const fetchUserInfo = async () => {
-  userInfoLoading.value = true
-  try {
-    await blogStore.fetchUserBlogInfo(userId.value)
-  } finally {
-    userInfoLoading.value = false
-  }
-}
-
-const fetchBlogs = () => {
-  if (activeTab.value === 'blogs') {
-    blogQueryParams.userId = userId.value
-    blogStore.fetchUserBlogs(userId.value, blogQueryParams)
-  } else {
-    starQueryParams.userId = userId.value
-    blogStore.fetchUserStarredBlogs(userId.value, starQueryParams)
-  }
-}
-
 // 监听 userId 变化
 watch(userId, () => {
-  blogQueryParams.pageNo = 1
-  starQueryParams.pageNo = 1
-  activeTab.value = 'blogs'
-  fetchUserInfo()
-  fetchBlogs()
+  queryParams.pageNo = 1
+  blogStore.fetchBlogs(queryParams)
+})
+
+onMounted(() => {
+  blogStore.fetchBlogs(queryParams)
 })
 
 onMounted(() => {
@@ -241,42 +185,16 @@ onMounted(() => {
 }
 
 .user-username {
-  margin: 0 0 16px 0;
+  margin: 0;
   color: #909399;
   font-size: 14px;
-}
-
-.user-stats {
-  display: flex;
-  gap: 32px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #909399;
 }
 
 .blog-list-card {
   margin-bottom: 20px;
 }
 
-.card-header {
-  margin: -12px 0;
-}
-
-.card-header :deep(.el-tabs__header) {
+.card-header h3 {
   margin: 0;
 }
 
@@ -297,6 +215,56 @@ onMounted(() => {
   border-color: #409eff;
   box-shadow: 0 2px 12px rgba(64, 158, 255, 0.2);
 }
+
+.blog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.blog-title {
+  margin: 0;
+  font-size: 18px;
+  color: #303133;
+}
+
+.blog-content {
+  margin: 0 0 12px 0;
+  color: #606266;
+  line-height: 1.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.blog-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #909399;
+}
+
+.blog-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+</style>
 
 .blog-item:last-child {
   margin-bottom: 0;
