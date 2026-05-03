@@ -142,11 +142,6 @@ watch(userId, () => {
 onMounted(() => {
   blogStore.fetchBlogs(queryParams)
 })
-
-onMounted(() => {
-  fetchUserInfo()
-  fetchBlogs()
-})
 </script>
 
 <style scoped>
@@ -254,54 +249,6 @@ onMounted(() => {
 }
 
 .stat-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
-</style>
-
-.blog-item:last-child {
-  margin-bottom: 0;
-}
-
-.blog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.blog-title {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-}
-
-.blog-tags {
-  flex-shrink: 0;
-}
-
-.blog-content {
-  margin: 0 0 12px 0;
-  color: #606266;
-  line-height: 1.6;
-  word-break: break-word;
-}
-
-.blog-footer {
-  display: flex;
-  gap: 20px;
-  color: #909399;
-  font-size: 14px;
-}
-
-.blog-footer span {
   display: flex;
   align-items: center;
   gap: 4px;

@@ -54,45 +54,21 @@
         </el-form-item>
 
         <el-form-item label="内容" prop="content">
-          <div class="editor-tabs">
-            <el-radio-group v-model="editorMode" size="small">
-              <el-radio-button value="edit">编辑</el-radio-button>
-              <el-radio-button value="preview">预览</el-radio-button>
-              <el-radio-button value="split">分屏</el-radio-button>
-            </el-radio-group>
-          </div>
-
-          <div class="editor-container" :class="{ 'split-mode': editorMode === 'split' }">
-            <div v-show="editorMode !== 'preview'" class="editor-pane">
-              <el-input
-                v-model="blogForm.content"
-                type="textarea"
-                :rows="20"
-                placeholder="请输入博客内容（支持 Markdown 格式）"
-                maxlength="10000"
-                show-word-limit
-              />
-            </div>
-            <div v-show="editorMode !== 'edit'" class="preview-pane">
-              <div class="preview-content">
-                <MarkdownViewer :content="blogForm.content" />
-              </div>
-            </div>
-          </div>
+          <MarkdownEditor
+            v-model="blogForm.content"
+            placeholder="请输入博客内容（支持 Markdown 格式）"
+            :max-length="10000"
+            :uploaded-pictures="uploadedPictures"
+            @image-uploaded="handleEditorImageUploaded"
+          />
         </el-form-item>
 
-        <!-- 图片上传 -->
+        <!-- 图片附件 -->
         <el-form-item label="图片附件">
           <div class="upload-section">
-            <el-upload
-              :http-request="handleUploadImage"
-              :show-file-list="false"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-            >
-              <el-button type="primary" :loading="uploading">
-                上传图片
-              </el-button>
-            </el-upload>
+            <div class="upload-tip">
+              可通过编辑器工具栏、拖拽或粘贴上传图片，上传成功后会插入到当前光标位置。
+            </div>
             <div v-if="uploadedPictures.length > 0" class="uploaded-list">
               <div
                 v-for="pic in uploadedPictures"
@@ -133,11 +109,10 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Delete } from '@element-plus/icons-vue'
-import type { FormInstance, FormRules, UploadRequestOptions } from 'element-plus'
-import { ElMessage } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
 import { useBlogStore } from '@/stores/blog'
 import type { BlogPicture } from '@/types/blog'
-import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
+import MarkdownEditor from '@/components/MarkdownEditor/index.vue'
 
 const router = useRouter()
 const blogStore = useBlogStore()
@@ -145,8 +120,6 @@ const blogStore = useBlogStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
-const uploading = ref(false)
-const editorMode = ref<'edit' | 'preview' | 'split'>('edit')
 
 interface BlogFormData {
   title: string
@@ -180,17 +153,12 @@ const formRules = computed<FormRules<BlogFormData>>(() => ({
   pictureIds: []
 }))
 
-const handleUploadImage = async (options: UploadRequestOptions) => {
-  uploading.value = true
-  try {
-    const picture = await blogStore.addImage(options.file as File)
-    if (picture) {
-      uploadedPictures.value.push(picture)
-      blogForm.pictureIds.push(picture.id)
-      ElMessage.success('图片上传成功')
-    }
-  } finally {
-    uploading.value = false
+const handleEditorImageUploaded = (picture: BlogPicture) => {
+  if (!uploadedPictures.value.some((item) => item.id === picture.id)) {
+    uploadedPictures.value.push(picture)
+  }
+  if (!blogForm.pictureIds.includes(picture.id)) {
+    blogForm.pictureIds.push(picture.id)
   }
 }
 
@@ -246,49 +214,14 @@ onMounted(() => {
   margin: 0;
 }
 
-.editor-tabs {
-  margin-bottom: 12px;
-}
-
-.editor-container {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.editor-container.split-mode {
-  display: flex;
-}
-
-.split-mode .editor-pane,
-.split-mode .preview-pane {
-  flex: 1;
-  min-width: 0;
-}
-
-.split-mode .preview-pane {
-  border-left: 1px solid #dcdfe6;
-}
-
-.editor-pane :deep(.el-textarea__inner) {
-  border: none;
-  border-radius: 0;
-  resize: none;
-}
-
-.preview-pane {
-  background-color: #fafafa;
-}
-
-.preview-content {
-  padding: 16px;
-  min-height: 400px;
-  max-height: 500px;
-  overflow-y: auto;
-}
-
 .upload-section {
   width: 100%;
+}
+
+.upload-tip {
+  color: #606266;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .uploaded-list {

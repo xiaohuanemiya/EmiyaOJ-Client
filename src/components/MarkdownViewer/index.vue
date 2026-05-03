@@ -1,43 +1,78 @@
 <!-- src/components/MarkdownViewer/index.vue -->
 <template>
-  <div class="markdown-viewer" v-html="renderedContent"></div>
+  <div ref="viewerRef" class="markdown-viewer vditor-reset"></div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import MarkdownIt from 'markdown-it'
-import hljs from 'highlight.js'
-import 'highlight.js/styles/github.css'
+import { nextTick, onMounted, ref, watch } from 'vue'
+import VditorPreview from 'vditor/dist/method'
+import 'vditor/dist/index.css'
+import 'katex/dist/katex.min.css'
 
 interface Props {
   content: string
 }
 
 const props = defineProps<Props>()
+const viewerRef = ref<HTMLDivElement>()
+let renderVersion = 0
 
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-  highlight: (str: string, lang: string) => {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(str, { language: lang }).value
-      } catch {}
+const bindImagePreview = () => {
+  if (!viewerRef.value) return
+
+  viewerRef.value.querySelectorAll<HTMLImageElement>('img').forEach((img) => {
+    img.onclick = () => VditorPreview.previewImage(img, 'zh_CN', 'classic')
+  })
+}
+
+const renderMarkdown = async () => {
+  if (!viewerRef.value) return
+
+  const currentVersion = ++renderVersion
+  await nextTick()
+  if (!viewerRef.value || currentVersion !== renderVersion) return
+
+  await VditorPreview.preview(viewerRef.value, props.content || '', {
+    mode: 'light',
+    lang: 'zh_CN',
+    hljs: {
+      enable: true,
+      style: 'github'
+    },
+    markdown: {
+      toc: false,
+      mark: true,
+      footnotes: true,
+      autoSpace: true
+    },
+    after() {
+      bindImagePreview()
     }
-    return ''
-  }
+  })
+}
+
+onMounted(() => {
+  renderMarkdown()
 })
 
-const renderedContent = computed(() => {
-  return md.render(props.content)
-})
+watch(
+  () => props.content,
+  () => {
+    renderMarkdown()
+  }
+)
 </script>
 
 <style scoped lang="scss">
 .markdown-viewer {
   line-height: 1.6;
   color: #333;
+
+  :deep(img) {
+    max-width: 100%;
+    height: auto;
+    cursor: zoom-in;
+  }
 
   :deep(h1),
   :deep(h2),
@@ -82,6 +117,13 @@ const renderedContent = computed(() => {
 
   :deep(li) {
     margin-bottom: 8px;
+  }
+
+  :deep(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
   }
 }
 </style>
