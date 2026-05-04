@@ -4,7 +4,10 @@
     <el-card v-loading="loading">
       <template #header>
         <div class="header-content">
-          <h2>发布博客</h2>
+          <h2>{{ isSolution ? '写题解' : '发布博客' }}</h2>
+          <p v-if="isSolution" class="header-hint">
+            为题目 #{{ problemIdFromQuery }} 写题解
+          </p>
         </div>
       </template>
 
@@ -24,7 +27,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="类型" prop="blogType">
+        <el-form-item v-if="!isSolution" label="类型" prop="blogType">
           <el-radio-group v-model="blogForm.blogType">
             <el-radio :value="0">普通博客</el-radio>
             <el-radio :value="1">题解</el-radio>
@@ -96,7 +99,7 @@
 
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="handleSubmit">
-            发布博客
+            {{ isSolution ? '发布题解' : '发布博客' }}
           </el-button>
           <el-button @click="handleCancel">取消</el-button>
         </el-form-item>
@@ -107,19 +110,27 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Delete } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useBlogStore } from '@/stores/blog'
 import type { BlogPicture } from '@/types/blog'
 import MarkdownEditor from '@/components/MarkdownEditor/index.vue'
 
+const route = useRoute()
 const router = useRouter()
 const blogStore = useBlogStore()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
+
+const problemIdFromQuery = computed(() => {
+  const raw = route.query.problemId
+  return Array.isArray(raw) ? raw[0] || '' : raw ? String(raw) : ''
+})
+
+const isSolution = computed(() => !!problemIdFromQuery.value)
 
 interface BlogFormData {
   title: string
@@ -132,7 +143,7 @@ interface BlogFormData {
 const blogForm = reactive<BlogFormData>({
   title: '',
   content: '',
-  blogType: 0,
+  blogType: isSolution.value ? 1 : 0,
   tagIds: [],
   pictureIds: []
 })
@@ -178,16 +189,30 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    const success = await blogStore.addBlog({
-      title: blogForm.title,
-      content: blogForm.content,
-      blogType: blogForm.blogType,
-      tagIds: blogForm.tagIds,
-      pictureIds: blogForm.pictureIds
-    })
+    let success = false
+    if (isSolution.value) {
+      success = await blogStore.addSolution(problemIdFromQuery.value, {
+        title: blogForm.title,
+        content: blogForm.content,
+        tagIds: blogForm.tagIds,
+        pictureIds: blogForm.pictureIds
+      })
+    } else {
+      success = await blogStore.addBlog({
+        title: blogForm.title,
+        content: blogForm.content,
+        blogType: blogForm.blogType,
+        tagIds: blogForm.tagIds,
+        pictureIds: blogForm.pictureIds
+      })
+    }
     
     if (success) {
-      router.push('/blogs')
+      if (isSolution.value) {
+        router.push(`/problem/${problemIdFromQuery.value}/solutions`)
+      } else {
+        router.push('/blogs')
+      }
     }
   } finally {
     submitting.value = false
@@ -212,6 +237,12 @@ onMounted(() => {
 
 .header-content h2 {
   margin: 0;
+}
+
+.header-hint {
+  margin: 6px 0 0 0;
+  color: #409eff;
+  font-size: 14px;
 }
 
 .upload-section {

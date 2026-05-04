@@ -3,13 +3,23 @@
   <div class="user-blog-container">
     <!-- 用户信息卡片 -->
     <el-card class="user-info-card">
-      <div class="user-info">
+      <div v-loading="userInfoLoading" class="user-info">
         <el-avatar :size="80" class="user-avatar">
-          {{ userId?.charAt(0) || 'U' }}
+          {{ userInfo?.nickname?.charAt(0) || userInfo?.username?.charAt(0) || 'U' }}
         </el-avatar>
         <div class="user-details">
-          <h2 class="user-name">用户 {{ userId }}</h2>
-          <p class="user-username">@{{ userId }}</p>
+          <h2 class="user-name">{{ userInfo?.nickname || userInfo?.username || '用户' }}</h2>
+          <p class="user-username">@{{ userInfo?.username || userId }}</p>
+          <div class="user-stats">
+            <div class="stat-item">
+              <span class="stat-value">{{ userInfo?.blogCount || 0 }}</span>
+              <span class="stat-label">博客</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ userInfo?.starCount || 0 }}</span>
+              <span class="stat-label">收藏</span>
+            </div>
+          </div>
         </div>
       </div>
     </el-card>
@@ -18,18 +28,21 @@
     <el-card class="blog-list-card">
       <template #header>
         <div class="card-header">
-          <h3>发布的博客</h3>
+          <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+            <el-tab-pane label="发布的博客" name="blogs" />
+            <el-tab-pane label="收藏的博客" name="stars" />
+          </el-tabs>
         </div>
       </template>
 
       <div v-loading="blogStore.loading" class="blog-list">
         <el-empty 
-          v-if="blogStore.blogs.length === 0" 
-          description="暂无博客" 
+          v-if="currentBlogs.length === 0" 
+          :description="activeTab === 'blogs' ? '暂无发布的博客' : '暂无收藏的博客'" 
         />
         
         <div
-          v-for="blog in blogStore.blogs"
+          v-for="blog in currentBlogs"
           :key="blog.id"
           class="blog-item"
           @click="handleBlogClick(blog)"
@@ -74,11 +87,11 @@
       </div>
 
       <!-- 分页 -->
-      <div v-if="blogStore.total > 0" class="pagination-container">
+      <div v-if="currentTotal > 0" class="pagination-container">
         <el-pagination
-          v-model:current-page="queryParams.pageNo"
-          v-model:page-size="queryParams.pageSize"
-          :total="blogStore.total"
+          v-model:current-page="currentQueryParams.pageNo"
+          v-model:page-size="currentQueryParams.pageSize"
+          :total="currentTotal"
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next, jumper"
           @current-change="handlePageChange"
@@ -90,11 +103,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Calendar, View, Star } from '@element-plus/icons-vue'
 import { useBlogStore } from '@/stores/blog'
-import type { Blog, BlogQueryParams } from '@/types/blog'
+import type { Blog, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
 import { formatDateTime } from '@/utils/format'
 
 const route = useRoute()
@@ -102,19 +115,59 @@ const router = useRouter()
 const blogStore = useBlogStore()
 
 const userId = computed(() => route.params.uid as string)
+const activeTab = ref<'blogs' | 'stars'>('blogs')
+const userInfoLoading = ref(false)
 
-const queryParams = reactive<BlogQueryParams>({
+const userInfo = computed(() => blogStore.userBlogInfo)
+
+const blogQueryParams = reactive<UserBlogQueryParams>({
   pageNo: 1,
-  pageSize: 10
+  pageSize: 10,
+  userId: route.params.uid as string
 })
 
+const starQueryParams = reactive<UserStarQueryParams>({
+  pageNo: 1,
+  pageSize: 10,
+  userId: route.params.uid as string
+})
+
+const currentQueryParams = computed(() => {
+  return activeTab.value === 'blogs' ? blogQueryParams : starQueryParams
+})
+
+const currentBlogs = computed(() => {
+  return activeTab.value === 'blogs' 
+    ? blogStore.userBlogs 
+    : blogStore.userStarredBlogs
+})
+
+const currentTotal = computed(() => {
+  return activeTab.value === 'blogs' 
+    ? blogStore.userBlogsTotal 
+    : blogStore.userStarredTotal
+})
+
+const handleTabChange = () => {
+  if (activeTab.value === 'blogs') {
+    blogQueryParams.pageNo = 1
+  } else {
+    starQueryParams.pageNo = 1
+  }
+  fetchBlogs()
+}
+
 const handlePageChange = () => {
-  blogStore.fetchBlogs(queryParams)
+  fetchBlogs()
 }
 
 const handleSizeChange = () => {
-  queryParams.pageNo = 1
-  blogStore.fetchBlogs(queryParams)
+  if (activeTab.value === 'blogs') {
+    blogQueryParams.pageNo = 1
+  } else {
+    starQueryParams.pageNo = 1
+  }
+  fetchBlogs()
 }
 
 const handleBlogClick = (blog: Blog) => {
@@ -133,14 +186,37 @@ const formatDate = (dateStr: string) => {
   return formatDateTime(dateStr)
 }
 
+const fetchUserInfo = async () => {
+  userInfoLoading.value = true
+  try {
+    await blogStore.fetchUserBlogInfo(userId.value)
+  } finally {
+    userInfoLoading.value = false
+  }
+}
+
+const fetchBlogs = () => {
+  if (activeTab.value === 'blogs') {
+    blogQueryParams.userId = userId.value
+    blogStore.fetchUserBlogs(userId.value, blogQueryParams)
+  } else {
+    starQueryParams.userId = userId.value
+    blogStore.fetchUserStarredBlogs(userId.value, starQueryParams)
+  }
+}
+
 // 监听 userId 变化
 watch(userId, () => {
-  queryParams.pageNo = 1
-  blogStore.fetchBlogs(queryParams)
+  blogQueryParams.pageNo = 1
+  starQueryParams.pageNo = 1
+  activeTab.value = 'blogs'
+  fetchUserInfo()
+  fetchBlogs()
 })
 
 onMounted(() => {
-  blogStore.fetchBlogs(queryParams)
+  fetchUserInfo()
+  fetchBlogs()
 })
 </script>
 
@@ -180,16 +256,42 @@ onMounted(() => {
 }
 
 .user-username {
-  margin: 0;
+  margin: 0 0 16px 0;
   color: #909399;
   font-size: 14px;
+}
+
+.user-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #909399;
 }
 
 .blog-list-card {
   margin-bottom: 20px;
 }
 
-.card-header h3 {
+.card-header {
+  margin: -12px 0;
+}
+
+.card-header :deep(.el-tabs__header) {
   margin: 0;
 }
 

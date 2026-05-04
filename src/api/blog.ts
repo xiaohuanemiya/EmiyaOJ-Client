@@ -8,7 +8,14 @@ import type {
   BlogPicture,
   CreateBlogParams,
   BlogQueryParams,
-  SolutionQueryParams
+  SolutionQueryParams,
+  Comment,
+  UserBlogInfo,
+  CommentQueryParams,
+  CommentSearchParams,
+  CreateCommentParams,
+  UserBlogQueryParams,
+  UserStarQueryParams
 } from '@/types/blog'
 
 /** 获取当前用户 ID，用于 X-User-Id 请求头 */
@@ -162,5 +169,130 @@ export const getAllTags = (): Promise<ApiResponse<BlogTag[]>> => {
   return request({
     url: '/blog/tags',
     method: 'GET'
+  })
+}
+
+// ==================== 收藏（Star） ====================
+
+/**
+ * 收藏博客
+ * POST /blog/{bid}/star
+ */
+export const starBlog = (bid: string): Promise<ApiResponse<null>> => {
+  return request({
+    url: `/blog/${bid}/star`,
+    method: 'POST',
+    headers: getUserIdHeader()
+  })
+}
+
+/**
+ * 取消收藏博客
+ * DELETE /blog/{bid}/star
+ */
+export const unstarBlog = (bid: string): Promise<ApiResponse<null>> => {
+  return request({
+    url: `/blog/${bid}/star`,
+    method: 'DELETE',
+    headers: getUserIdHeader()
+  })
+}
+
+// ==================== 评论（Comment） ====================
+
+/**
+ * 分页查询博客评论
+ * POST /blog/{bid}/comments/query
+ */
+export const queryBlogComments = (
+  bid: string,
+  data: CommentQueryParams
+): Promise<ApiResponse<PageResult<Comment>>> => {
+  return request({
+    url: `/blog/${bid}/comments/query`,
+    method: 'POST',
+    data
+  })
+}
+
+/**
+ * 发表评论
+ * POST /blog/{bid}/comments
+ */
+export const createComment = (
+  bid: string,
+  data: CreateCommentParams
+): Promise<ApiResponse<null>> => {
+  return request({
+    url: `/blog/${bid}/comments`,
+    method: 'POST',
+    headers: getUserIdHeader(),
+    data
+  })
+}
+
+/**
+ * 获取指定评论
+ * GET /blog/comments/{cid}
+ */
+export const getCommentDetail = (cid: string): Promise<ApiResponse<Comment>> => {
+  return request({
+    url: `/blog/comments/${cid}`,
+    method: 'GET'
+  })
+}
+
+/**
+ * 删除评论
+ * DELETE /blog/comments/{cid}
+ */
+export const deleteComment = (cid: string): Promise<ApiResponse<null>> => {
+  return request({
+    url: `/blog/comments/${cid}`,
+    method: 'DELETE',
+    headers: getUserIdHeader()
+  })
+}
+
+// ==================== 用户博客 ====================
+
+/**
+ * 查询博客模块用户信息
+ * GET /blog/user/{uid}
+ */
+export const getUserBlogInfo = (uid: string): Promise<ApiResponse<UserBlogInfo>> => {
+  return request({
+    url: `/blog/user/${uid}`,
+    method: 'GET'
+  })
+}
+
+/**
+ * 分页查询用户发表的博客
+ * POST /blog/user/{uid}/blogs/query
+ */
+export const queryUserBlogs = (
+  uid: string,
+  data: UserBlogQueryParams
+): Promise<ApiResponse<PageResult<Blog>>> => {
+  return request({
+    url: `/blog/user/${uid}/blogs/query`,
+    method: 'POST',
+    data
+  })
+}
+
+/**
+ * 分页查询用户收藏的博客
+ * POST /blog/user/{uid}/stars/query
+ */
+export const queryUserStarredBlogs = (
+  uid: string,
+  data: UserStarQueryParams
+): Promise<ApiResponse<PageResult<Blog>>> => {
+  return request({
+    url: `/blog/user/${uid}/stars/query`,
+    method: 'POST',
+    data
   })
 }

@@ -74,3 +74,69 @@ export interface SolutionQueryParams {
   pageNo: number
   pageSize: number
 }
+
+/**
+ * 评论信息（博客评论 VO）
+ */
+export interface Comment {
+  id: string
+  userId: string
+  username: string
+  nickname: string
+  content: string
+  createTime: string
+  updateTime: string
+}
+
+/**
+ * 用户博客信息（用户博客信息 VO）
+ */
+export interface UserBlogInfo {
+  userId: string
+  username: string
+  nickname: string
+  blogCount: number
+  starCount: number
+}
+
+/**
+ * 评论分页查询参数（POST /blog/{bid}/comments/query）
+ */
+export interface CommentQueryParams {
+  pageNo?: number
+  pageSize?: number
+}
+
+/**
+ * 评论条件查询参数（POST /blog/comments/query）
+ */
+export interface CommentSearchParams {
+  blogId?: string
+  fromDay?: string
+  toDay?: string
+}
+
+/**
+ * 发表评论请求参数（POST /blog/{bid}/comments）
+ */
+export interface CreateCommentParams {
+  content: string
+}
+
+/**
+ * 用户博客查询参数（POST /blog/user/{uid}/blogs/query）
+ */
+export interface UserBlogQueryParams {
+  userId: string
+  pageNo: number
+  pageSize: number
+}
+
+/**
+ * 用户收藏博客查询参数（POST /blog/user/{uid}/stars/query）
+ */
+export interface UserStarQueryParams {
+  userId?: string
+  pageNo: number
+  pageSize: number
+}

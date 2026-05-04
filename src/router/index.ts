@@ -46,6 +46,15 @@ const router = createRouter({
           }
         },
         {
+          path: 'problem/:problemId/solutions',
+          name: 'ProblemSolutions',
+          component: () => import('@/views/ProblemSolutions/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '题目题解'
+          }
+        },
+        {
           path: 'contests',
           name: 'ContestList',
           component: () => import('@/views/ContestList/index.vue'),
@@ -143,6 +152,15 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             title: '发布博客'
+          }
+        },
+        {
+          path: 'blog/edit/:id',
+          name: 'BlogEdit',
+          component: () => import('@/views/BlogEdit/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '编辑博客'
           }
         },
         {

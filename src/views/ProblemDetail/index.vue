@@ -89,6 +89,26 @@
             </el-tag>
           </div>
         </el-card>
+
+        <!-- 题解入口 -->
+        <el-card v-if="!contestAccessDenied" class="solution-entry-card">
+          <div class="solution-entry">
+            <div class="solution-entry-info">
+              <h3>题解</h3>
+              <p>查看本题的题解，或分享你的解题思路</p>
+            </div>
+            <div class="solution-entry-actions">
+              <el-button type="primary" @click="handleWriteSolution">
+                <el-icon><Edit /></el-icon>
+                写题解
+              </el-button>
+              <el-button @click="handleViewSolutions">
+                <el-icon><View /></el-icon>
+                查看全部题解
+              </el-button>
+            </div>
+          </div>
+        </el-card>
       </el-col>
 
       <!-- 右侧：代码编辑器 -->
@@ -169,7 +189,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ChatDotRound } from '@element-plus/icons-vue'
+import { ChatDotRound, Edit, View } from '@element-plus/icons-vue'
 import { useProblemStore } from '@/stores/problem'
 import { useContestStore } from '@/stores/contest'
 import { useLanguageStore } from '@/stores/language'
@@ -342,6 +362,14 @@ const handleReset = () => {
   ElMessage.info('代码已重置')
 }
 
+const handleWriteSolution = () => {
+  router.push(`/blog/create?problemId=${problemId}`)
+}
+
+const handleViewSolutions = () => {
+  router.push(`/problem/${problemId}/solutions`)
+}
+
 onMounted(async () => {
   if (contestId.value) {
     await contestStore.fetchContestDetail(contestId.value)
@@ -466,6 +494,34 @@ onMounted(async () => {
 
     .back-button {
       margin-top: 20px;
+    }
+  }
+
+  .solution-entry-card {
+    margin-top: 16px;
+
+    .solution-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &-info {
+        h3 {
+          margin: 0 0 4px 0;
+          color: #303133;
+        }
+        p {
+          margin: 0;
+          color: #909399;
+          font-size: 14px;
+        }
+      }
+
+      &-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
     }
   }
 }
