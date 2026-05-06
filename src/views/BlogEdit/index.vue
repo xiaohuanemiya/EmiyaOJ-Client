@@ -4,7 +4,10 @@
     <el-card v-loading="loading">
       <template #header>
         <div class="header-content">
-          <h2>{{ isEdit ? '编辑博客' : '发布博客' }}</h2>
+          <h2>{{ blogForm.blogType === 1 ? '写题解' : '发布博客' }}</h2>
+          <p v-if="isSolution" class="header-hint">
+            为题目 #{{ problemIdFromQuery }} 写题解
+          </p>
         </div>
       </template>
 
@@ -24,7 +27,51 @@
           />
         </el-form-item>
 
-        <el-form-item v-if="!isEdit" label="标签" prop="tagIds">
+        <el-form-item v-if="!isSolution" label="类型" prop="blogType">
+          <el-radio-group v-model="blogForm.blogType" @change="handleBlogTypeChange">
+            <el-radio :value="0">普通博客</el-radio>
+            <el-radio :value="1">题解</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <!-- 题解关联题目选择器 -->
+        <el-form-item
+          v-if="blogForm.blogType === 1 && !isSolution"
+          label="关联题目"
+          prop="problemId"
+        >
+          <el-select
+            v-model="blogForm.problemId"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请搜索并选择题目"
+            :remote-method="searchProblems"
+            :loading="problemSearchLoading"
+            style="width: 100%"
+            clearable
+          >
+            <el-option
+              v-for="problem in problemSearchResults"
+              :key="problem.id"
+              :label="`#${problem.id} ${problem.title}`"
+              :value="problem.id"
+            >
+              <span style="font-weight: 500">#{{ problem.id }}</span>
+              <span style="margin-left: 8px">{{ problem.title }}</span>
+              <el-tag
+                v-if="problem.difficultyDesc"
+                size="small"
+                style="margin-left: 8px"
+                :type="getDifficultyTagType(problem.difficulty)"
+              >
+                {{ problem.difficultyDesc }}
+              </el-tag>
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="标签" prop="tagIds">
           <el-select
             v-model="blogForm.tagIds"
             multiple
@@ -47,28 +94,41 @@
         </el-form-item>
 
         <el-form-item label="内容" prop="content">
-          <div class="editor-tabs">
-            <el-radio-group v-model="editorMode" size="small">
-              <el-radio-button value="edit">编辑</el-radio-button>
-              <el-radio-button value="preview">预览</el-radio-button>
-              <el-radio-button value="split">分屏</el-radio-button>
-            </el-radio-group>
-          </div>
+          <MarkdownEditor
+            v-model="blogForm.content"
+            placeholder="请输入博客内容（支持 Markdown 格式）"
+            :max-length="10000"
+            :uploaded-pictures="uploadedPictures"
+            @image-uploaded="handleEditorImageUploaded"
+          />
+        </el-form-item>
 
-          <div class="editor-container" :class="{ 'split-mode': editorMode === 'split' }">
-            <div v-show="editorMode !== 'preview'" class="editor-pane">
-              <el-input
-                v-model="blogForm.content"
-                type="textarea"
-                :rows="20"
-                placeholder="请输入博客内容（支持 Markdown 格式）"
-                :maxlength="isEdit ? 10000 : 1000"
-                show-word-limit
-              />
+        <!-- 图片附件 -->
+        <el-form-item label="图片附件">
+          <div class="upload-section">
+            <div class="upload-tip">
+              可通过编辑器工具栏、拖拽或粘贴上传图片，上传成功后会插入到当前光标位置。
             </div>
-            <div v-show="editorMode !== 'edit'" class="preview-pane">
-              <div class="preview-content">
-                <MarkdownViewer :content="blogForm.content" />
+            <div v-if="uploadedPictures.length > 0" class="uploaded-list">
+              <div
+                v-for="pic in uploadedPictures"
+                :key="pic.id"
+                class="uploaded-item"
+              >
+                <el-image
+                  :src="pic.url"
+                  fit="cover"
+                  style="width: 100px; height: 80px; border-radius: 4px"
+                  :preview-src-list="[pic.url]"
+                />
+                <span class="uploaded-name">{{ pic.originalFilename }}</span>
+                <el-button
+                  type="danger"
+                  size="small"
+                  text
+                  :icon="Delete"
+                  @click="handleRemovePicture(pic.id)"
+                />
               </div>
             </div>
           </div>
@@ -76,7 +136,7 @@
 
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="handleSubmit">
-            {{ isEdit ? '保存修改' : '发布博客' }}
+            {{ blogForm.blogType === 1 ? '发布题解' : '发布博客' }}
           </el-button>
           <el-button @click="handleCancel">取消</el-button>
         </el-form-item>
@@ -88,33 +148,93 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Delete } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useBlogStore } from '@/stores/blog'
-import MarkdownViewer from '@/components/MarkdownViewer/index.vue'
+import { useProblemStore } from '@/stores/problem'
+import type { BlogPicture } from '@/types/blog'
+import type { Problem } from '@/types/problem'
+import MarkdownEditor from '@/components/MarkdownEditor/index.vue'
 
 const route = useRoute()
 const router = useRouter()
 const blogStore = useBlogStore()
+const problemStore = useProblemStore()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
-const editorMode = ref<'edit' | 'preview' | 'split'>('edit')
 
-const isEdit = computed(() => route.name === 'BlogEdit')
-const blogId = computed(() => route.params.id as string)
+// 题目搜索相关
+const problemSearchResults = ref<Problem[]>([])
+const problemSearchLoading = ref(false)
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+const problemIdFromQuery = computed(() => {
+  const raw = route.query.problemId
+  return Array.isArray(raw) ? raw[0] || '' : raw ? String(raw) : ''
+})
+
+const isSolution = computed(() => !!problemIdFromQuery.value)
 
 interface BlogFormData {
   title: string
   content: string
+  blogType: number
   tagIds: string[]
+  pictureIds: string[]
+  problemId: string
 }
 
 const blogForm = reactive<BlogFormData>({
   title: '',
   content: '',
-  tagIds: []
+  blogType: isSolution.value ? 1 : 0,
+  tagIds: [],
+  pictureIds: [],
+  problemId: problemIdFromQuery.value
 })
+
+const uploadedPictures = ref<BlogPicture[]>([])
+
+/** 远程搜索题目 */
+const searchProblems = (query: string) => {
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+  if (!query || query.trim().length === 0) {
+    problemSearchResults.value = []
+    return
+  }
+  searchTimer = setTimeout(async () => {
+    problemSearchLoading.value = true
+    try {
+      await problemStore.fetchProblems({
+        title: query.trim(),
+        pageNum: 1,
+        pageSize: 20
+      })
+      problemSearchResults.value = problemStore.problems
+    } finally {
+      problemSearchLoading.value = false
+    }
+  }, 300)
+}
+
+/** 处理博客类型变更 */
+const handleBlogTypeChange = (value: number) => {
+  if (value === 0) {
+    // 切换回普通博客时清空关联题目
+    blogForm.problemId = ''
+  }
+}
+
+/** 获取难度标签类型 */
+const getDifficultyTagType = (difficulty: number) => {
+  if (difficulty <= 1) return 'success'
+  if (difficulty === 2) return 'warning'
+  return 'danger'
+}
 
 const formRules = computed<FormRules<BlogFormData>>(() => ({
   title: [
@@ -123,14 +243,43 @@ const formRules = computed<FormRules<BlogFormData>>(() => ({
   ],
   content: [
     { required: true, message: '请输入博客内容', trigger: 'blur' },
-    { 
-      max: isEdit.value ? 10000 : 1000, 
-      message: `内容不能超过${isEdit.value ? 10000 : 1000}个字符`, 
-      trigger: 'blur' 
+    { max: 10000, message: '内容不能超过10000个字符', trigger: 'blur' }
+  ],
+  problemId: [
+    {
+      required: true,
+      message: '请选择关联的题目',
+      trigger: 'change',
+      validator: (_rule, value, callback) => {
+        if (blogForm.blogType === 1 && !isSolution.value && !value) {
+          callback(new Error('创建题解时必须选择关联的题目'))
+        } else {
+          callback()
+        }
+      }
     }
   ],
-  tagIds: []
+  blogType: [],
+  tagIds: [],
+  pictureIds: []
 }))
+
+const handleEditorImageUploaded = (picture: BlogPicture) => {
+  if (!uploadedPictures.value.some((item) => item.id === picture.id)) {
+    uploadedPictures.value.push(picture)
+  }
+  if (!blogForm.pictureIds.includes(picture.id)) {
+    blogForm.pictureIds.push(picture.id)
+  }
+}
+
+const handleRemovePicture = async (picId: string) => {
+  const success = await blogStore.removeImage(picId)
+  if (success) {
+    uploadedPictures.value = uploadedPictures.value.filter((p) => p.id !== picId)
+    blogForm.pictureIds = blogForm.pictureIds.filter((id) => id !== picId)
+  }
+}
 
 const handleSubmit = async () => {
   if (!formRef.value) return
@@ -141,23 +290,30 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     let success = false
-    
-    if (isEdit.value) {
-      success = await blogStore.editBlog(blogId.value, {
+    // 题解类型：使用 createSolution API
+    if (blogForm.blogType === 1) {
+      const targetProblemId = isSolution.value ? problemIdFromQuery.value : blogForm.problemId
+      success = await blogStore.addSolution(targetProblemId, {
         title: blogForm.title,
-        content: blogForm.content
+        content: blogForm.content,
+        tagIds: blogForm.tagIds,
+        pictureIds: blogForm.pictureIds
       })
     } else {
+      // 普通博客：使用 createBlog API
       success = await blogStore.addBlog({
         title: blogForm.title,
         content: blogForm.content,
-        tagIds: blogForm.tagIds
+        blogType: blogForm.blogType,
+        tagIds: blogForm.tagIds,
+        pictureIds: blogForm.pictureIds
       })
     }
     
     if (success) {
-      if (isEdit.value) {
-        router.push(`/blog/${blogId.value}`)
+      if (blogForm.blogType === 1) {
+        const targetProblemId = isSolution.value ? problemIdFromQuery.value : blogForm.problemId
+        router.push(`/problem/${targetProblemId}/solutions`)
       } else {
         router.push('/blogs')
       }
@@ -171,31 +327,8 @@ const handleCancel = () => {
   router.back()
 }
 
-const loadBlogDetail = async () => {
-  if (!isEdit.value) return
-  
-  loading.value = true
-  try {
-    const blog = await blogStore.fetchBlogDetail(blogId.value)
-    if (blog) {
-      blogForm.title = blog.title
-      blogForm.content = blog.content
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(async () => {
-  // 加载标签列表
-  if (!isEdit.value) {
-    blogStore.fetchTags()
-  }
-  
-  // 如果是编辑模式，加载博客详情
-  if (isEdit.value) {
-    await loadBlogDetail()
-  }
+onMounted(() => {
+  blogStore.fetchTags()
 })
 </script>
 
@@ -210,44 +343,45 @@ onMounted(async () => {
   margin: 0;
 }
 
-.editor-tabs {
-  margin-bottom: 12px;
+.header-hint {
+  margin: 6px 0 0 0;
+  color: #409eff;
+  font-size: 14px;
 }
 
-.editor-container {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
+.upload-section {
+  width: 100%;
 }
 
-.editor-container.split-mode {
+.upload-tip {
+  color: #606266;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.uploaded-list {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.split-mode .editor-pane,
-.split-mode .preview-pane {
-  flex: 1;
-  min-width: 0;
+.uploaded-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  background: #fafafa;
 }
 
-.split-mode .preview-pane {
-  border-left: 1px solid #dcdfe6;
-}
-
-.editor-pane :deep(.el-textarea__inner) {
-  border: none;
-  border-radius: 0;
-  resize: none;
-}
-
-.preview-pane {
-  background-color: #fafafa;
-}
-
-.preview-content {
-  padding: 16px;
-  min-height: 400px;
-  max-height: 500px;
-  overflow-y: auto;
+.uploaded-name {
+  font-size: 12px;
+  color: #606266;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

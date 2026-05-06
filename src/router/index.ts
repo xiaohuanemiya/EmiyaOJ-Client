@@ -46,6 +46,69 @@ const router = createRouter({
           }
         },
         {
+          path: 'problem/:problemId/solutions',
+          name: 'ProblemSolutions',
+          component: () => import('@/views/ProblemSolutions/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '题目题解'
+          }
+        },
+        {
+          path: 'contests',
+          name: 'ContestList',
+          component: () => import('@/views/ContestList/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '比赛列表'
+          }
+        },
+        {
+          path: 'contest/:id',
+          name: 'ContestDetail',
+          component: () => import('@/views/ContestDetail/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '比赛详情'
+          }
+        },
+        {
+          path: 'problem-sets',
+          name: 'ProblemSetList',
+          component: () => import('@/views/ProblemSetList/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '题单列表'
+          }
+        },
+        {
+          path: 'problem-set/create',
+          name: 'ProblemSetCreate',
+          component: () => import('@/views/ProblemSetEdit/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '创建题单'
+          }
+        },
+        {
+          path: 'problem-set/:id/edit',
+          name: 'ProblemSetEdit',
+          component: () => import('@/views/ProblemSetEdit/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '编辑题单'
+          }
+        },
+        {
+          path: 'problem-set/:id',
+          name: 'ProblemSetDetail',
+          component: () => import('@/views/ProblemSetDetail/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '题单详情'
+          }
+        },
+        {
           path: 'submissions',
           name: 'SubmissionList',
           component: () => import('@/views/SubmissionList/index.vue'),

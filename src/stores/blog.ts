@@ -1,65 +1,63 @@
 // src/stores/blog.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Blog, BlogTag, Comment, UserBlogInfo, BlogQueryParams, CommentQueryParams, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
+import type { Blog, BlogTag, BlogPicture, BlogQueryParams, Comment, UserBlogInfo, CommentQueryParams, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
 import {
-  getAllBlogs,
   queryBlogs,
   getBlogDetail,
   deleteBlog,
   createBlog,
-  updateBlog,
+  createSolution,
+  querySolutions,
+  likeBlog,
+  unlikeBlog,
+  starBlog,
+  unstarBlog,
   getAllTags,
+  uploadImage,
+  deleteImage,
   queryBlogComments,
   createComment,
   deleteComment,
-  starBlog,
-  unstarBlog,
   getUserBlogInfo,
   queryUserBlogs,
   queryUserStarredBlogs
 } from '@/api/blog'
-import type { CreateBlogParams, UpdateBlogParams, CreateCommentParams } from '@/types/blog'
+import type { CreateBlogParams, CreateCommentParams, SolutionQueryParams } from '@/types/blog'
 import { ElMessage } from 'element-plus'
 
 export const useBlogStore = defineStore('blog', () => {
-  // State
+  // State - 博客
   const blogs = ref<Blog[]>([])
   const currentBlog = ref<Blog | null>(null)
   const total = ref(0)
   const loading = ref(false)
 
-  // Tags state
+  // State - 标签
   const tags = ref<BlogTag[]>([])
   const tagsLoading = ref(false)
 
-  // Comments state
+  // State - 题解
+  const solutions = ref<Blog[]>([])
+  const solutionsTotal = ref(0)
+  const solutionsLoading = ref(false)
+
+  // State - 收藏（本地跟踪）
+  const isStarred = ref(false)
+
+  // State - 评论
   const comments = ref<Comment[]>([])
   const commentsTotal = ref(0)
   const commentsLoading = ref(false)
 
-  // User blog state
+  // State - 用户博客
   const userBlogInfo = ref<UserBlogInfo | null>(null)
   const userBlogs = ref<Blog[]>([])
   const userBlogsTotal = ref(0)
   const userStarredBlogs = ref<Blog[]>([])
   const userStarredTotal = ref(0)
 
-  // Actions - 博客相关
-  const fetchAllBlogs = async () => {
-    loading.value = true
-    try {
-      const response = await getAllBlogs()
-      if (response.code === 200 && response.data) {
-        blogs.value = response.data
-      }
-    } catch (error) {
-      console.error('Failed to fetch all blogs:', error)
-    } finally {
-      loading.value = false
-    }
-  }
-
+  // Actions - 博客查询
   const fetchBlogs = async (params: BlogQueryParams) => {
     loading.value = true
     try {
@@ -106,17 +104,32 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  const editBlog = async (id: string, params: UpdateBlogParams) => {
+  const addSolution = async (problemId: string, params: Omit<CreateBlogParams, 'blogType'>) => {
     try {
-      const response = await updateBlog(id, params)
+      const response = await createSolution(problemId, params)
       if (response.code === 200) {
-        ElMessage.success('修改成功')
+        ElMessage.success('题解发布成功')
         return true
       }
       return false
     } catch (error) {
-      console.error('Failed to update blog:', error)
+      console.error('Failed to create solution:', error)
       return false
+    }
+  }
+
+  const fetchSolutions = async (problemId: string, params: SolutionQueryParams) => {
+    solutionsLoading.value = true
+    try {
+      const response = await querySolutions(problemId, params)
+      if (response.code === 200 && response.data) {
+        solutions.value = response.data.list
+        solutionsTotal.value = response.data.total
+      }
+    } catch (error) {
+      console.error('Failed to fetch solutions:', error)
+    } finally {
+      solutionsLoading.value = false
     }
   }
 
@@ -134,7 +147,44 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  // Actions - 标签相关
+  // Actions - 点赞（Like，新增）
+  const toggleLike = async (blogId: string, isLiked: boolean) => {
+    try {
+      const response = isLiked ? await unlikeBlog(blogId) : await likeBlog(blogId)
+      if (response.code === 200) {
+        ElMessage.success(isLiked ? '已取消点赞' : '点赞成功')
+        if (currentBlog.value && currentBlog.value.id === blogId) {
+          currentBlog.value.liked = !isLiked
+          currentBlog.value.likeCount += isLiked ? -1 : 1
+        }
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Failed to toggle like:', error)
+      return false
+    }
+  }
+
+  // Actions - 收藏（Star，保留）
+  const toggleStar = async (blogId: string) => {
+    try {
+      const response = isStarred.value
+        ? await unstarBlog(blogId)
+        : await starBlog(blogId)
+      if (response.code === 200) {
+        isStarred.value = !isStarred.value
+        ElMessage.success(isStarred.value ? '收藏成功' : '已取消收藏')
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Failed to toggle star:', error)
+      return false
+    }
+  }
+
+  // Actions - 标签
   const fetchTags = async () => {
     tagsLoading.value = true
     try {
@@ -149,7 +199,35 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  // Actions - 评论相关
+  // Actions - 图片
+  const addImage = async (file: File): Promise<BlogPicture | null> => {
+    try {
+      const response = await uploadImage(file)
+      if (response.code === 200 && response.data) {
+        return response.data
+      }
+      return null
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      return null
+    }
+  }
+
+  const removeImage = async (id: string) => {
+    try {
+      const response = await deleteImage(id)
+      if (response.code === 200) {
+        ElMessage.success('图片已删除')
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Failed to delete image:', error)
+      return false
+    }
+  }
+
+  // Actions - 评论
   const fetchComments = async (blogId: string, params: CommentQueryParams) => {
     commentsLoading.value = true
     try {
@@ -193,22 +271,7 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  // Actions - 收藏相关
-  const toggleStar = async (blogId: string, isStarred: boolean) => {
-    try {
-      const response = isStarred ? await unstarBlog(blogId) : await starBlog(blogId)
-      if (response.code === 200) {
-        ElMessage.success(isStarred ? '已取消收藏' : '收藏成功')
-        return true
-      }
-      return false
-    } catch (error) {
-      console.error('Failed to toggle star:', error)
-      return false
-    }
-  }
-
-  // Actions - 用户博客相关
+  // Actions - 用户博客
   const fetchUserBlogInfo = async (userId: string) => {
     try {
       const response = await getUserBlogInfo(userId)
@@ -253,12 +316,11 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  // 清空当前博客
+  // 清空
   const clearCurrentBlog = () => {
     currentBlog.value = null
   }
 
-  // 清空评论
   const clearComments = () => {
     comments.value = []
     commentsTotal.value = 0
@@ -272,6 +334,10 @@ export const useBlogStore = defineStore('blog', () => {
     loading,
     tags,
     tagsLoading,
+    solutions,
+    solutionsTotal,
+    solutionsLoading,
+    isStarred,
     comments,
     commentsTotal,
     commentsLoading,
@@ -282,17 +348,20 @@ export const useBlogStore = defineStore('blog', () => {
     userStarredTotal,
 
     // Actions
-    fetchAllBlogs,
     fetchBlogs,
     fetchBlogDetail,
     addBlog,
-    editBlog,
+    addSolution,
+    fetchSolutions,
     removeBlog,
+    toggleLike,
+    toggleStar,
     fetchTags,
+    addImage,
+    removeImage,
     fetchComments,
     addComment,
     removeComment,
-    toggleStar,
     fetchUserBlogInfo,
     fetchUserBlogs,
     fetchUserStarredBlogs,

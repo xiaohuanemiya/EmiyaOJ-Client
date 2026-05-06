@@ -17,6 +17,8 @@
           >
             <el-menu-item index="/">首页</el-menu-item>
             <el-menu-item index="/problems">题库</el-menu-item>
+            <el-menu-item index="/contests">比赛</el-menu-item>
+            <el-menu-item index="/problem-sets">题单</el-menu-item>
             <el-menu-item index="/blogs">博客</el-menu-item>
             <el-menu-item index="/submissions">提交记录</el-menu-item>
           </el-menu>
@@ -63,7 +65,13 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const activeMenu = computed(() => route.path)
+const activeMenu = computed(() => {
+  if (route.path.startsWith('/contest/')) return '/contests'
+  if (route.path.startsWith('/problem-set/')) return '/problem-sets'
+  if (route.path.startsWith('/problem/')) return '/problems'
+  if (route.path.startsWith('/submission/')) return '/submissions'
+  return route.path
+})
 
 const handleCommand = (command: string) => {
   if (command === 'profile') {

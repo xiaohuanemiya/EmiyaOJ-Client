@@ -33,6 +33,11 @@
       >
         <el-table-column prop="id" label="提交ID" width="150" />
         <el-table-column prop="problemId" label="题目ID" width="120" />
+        <el-table-column label="比赛ID" width="120">
+          <template #default="{ row }">
+            {{ row.contestId || '-' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="languageId" label="语言ID" width="100" />
         <el-table-column label="状态" width="120">
           <template #default="{ row }">
@@ -41,12 +46,12 @@
         </el-table-column>
         <el-table-column label="时间" width="100">
           <template #default="{ row }">
-            {{ row.timeUsed ? `${row.timeUsed}ms` : '-' }}
+            {{ row.maxTimeUsed ? `${row.maxTimeUsed}ms` : '-' }}
           </template>
         </el-table-column>
         <el-table-column label="内存" width="100">
           <template #default="{ row }">
-            {{ row.memoryUsed ? `${row.memoryUsed}KB` : '-' }}
+            {{ row.maxMemoryUsed ? `${row.maxMemoryUsed}KB` : '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="提交时间" width="180" />
@@ -73,12 +78,12 @@ import { reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSubmissionStore } from '@/stores/submission'
 import StatusTag from '@/components/StatusTag/index.vue'
-import type { SubmissionQueryParams } from '@/types/submission'
+import type { MySubmissionQueryParams } from '@/types/submission'
 
 const router = useRouter()
 const submissionStore = useSubmissionStore()
 
-const queryParams = reactive<SubmissionQueryParams>({
+const queryParams = reactive<MySubmissionQueryParams>({
   pageNum: 1,
   pageSize: 20,
   problemId: undefined
@@ -86,7 +91,7 @@ const queryParams = reactive<SubmissionQueryParams>({
 
 const handleSearch = () => {
   queryParams.pageNum = 1
-  submissionStore.fetchSubmissions(queryParams)
+  submissionStore.fetchMySubmissions(queryParams)
 }
 
 const handleReset = () => {
@@ -95,12 +100,12 @@ const handleReset = () => {
 }
 
 const handlePageChange = () => {
-  submissionStore.fetchSubmissions(queryParams)
+  submissionStore.fetchMySubmissions(queryParams)
 }
 
 const handleSizeChange = () => {
   queryParams.pageNum = 1
-  submissionStore.fetchSubmissions(queryParams)
+  submissionStore.fetchMySubmissions(queryParams)
 }
 
 const handleRowClick = (row: any) => {
@@ -108,7 +113,7 @@ const handleRowClick = (row: any) => {
 }
 
 onMounted(() => {
-  submissionStore.fetchSubmissions(queryParams)
+  submissionStore.fetchMySubmissions(queryParams)
 })
 </script>
 

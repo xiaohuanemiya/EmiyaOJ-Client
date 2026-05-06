@@ -48,7 +48,12 @@
           @click="handleBlogClick(blog)"
         >
           <div class="blog-header">
-            <h3 class="blog-title">{{ blog.title }}</h3>
+            <h3 class="blog-title">
+              {{ blog.title }}
+              <el-tag v-if="blog.blogType === 1" size="small" type="success" style="margin-left: 8px">
+                题解
+              </el-tag>
+            </h3>
             <div class="blog-tags">
               <el-tag
                 v-for="tag in blog.tags"
@@ -66,6 +71,16 @@
             <span class="blog-time">
               <el-icon><Calendar /></el-icon>
               {{ formatDate(blog.createTime) }}
+            </span>
+            <span class="blog-stats">
+              <span class="stat-item">
+                <el-icon><View /></el-icon>
+                {{ blog.viewCount }}
+              </span>
+              <span class="stat-item">
+                <el-icon><Star /></el-icon>
+                {{ blog.likeCount }}
+              </span>
             </span>
           </div>
         </div>
@@ -90,7 +105,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Calendar } from '@element-plus/icons-vue'
+import { Calendar, View, Star } from '@element-plus/icons-vue'
 import { useBlogStore } from '@/stores/blog'
 import type { Blog, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
 import { formatDateTime } from '@/utils/format'
@@ -298,14 +313,10 @@ onMounted(() => {
   box-shadow: 0 2px 12px rgba(64, 158, 255, 0.2);
 }
 
-.blog-item:last-child {
-  margin-bottom: 0;
-}
-
 .blog-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 12px;
 }
 
@@ -315,25 +326,31 @@ onMounted(() => {
   color: #303133;
 }
 
-.blog-tags {
-  flex-shrink: 0;
-}
-
 .blog-content {
   margin: 0 0 12px 0;
   color: #606266;
   line-height: 1.6;
-  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .blog-footer {
   display: flex;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
   color: #909399;
-  font-size: 14px;
 }
 
-.blog-footer span {
+.blog-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-item {
   display: flex;
   align-items: center;
   gap: 4px;

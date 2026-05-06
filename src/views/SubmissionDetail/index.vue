@@ -14,26 +14,35 @@
         <el-descriptions-item label="题目ID">
           {{ currentSubmission?.problemId }}
         </el-descriptions-item>
+        <el-descriptions-item label="比赛ID">
+          {{ currentSubmission?.contestId || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="比赛题目ID">
+          {{ currentSubmission?.contestProblemId || '-' }}
+        </el-descriptions-item>
         <el-descriptions-item label="语言ID">
           {{ currentSubmission?.languageId }}
         </el-descriptions-item>
         <el-descriptions-item label="状态">
           <status-tag :status="currentSubmission?.status" />
         </el-descriptions-item>
-        <el-descriptions-item label="得分" v-if="currentSubmission?.score !== undefined">
-          {{ currentSubmission.score }}
+        <el-descriptions-item label="得分">
+          {{ currentSubmission?.score ?? '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="用时">
-          {{ currentSubmission?.timeUsed ? `${currentSubmission.timeUsed}ms` : '-' }}
+        <el-descriptions-item label="通过用例">
+          {{ currentSubmission ? `${currentSubmission.passedCaseCount} / ${currentSubmission.totalCaseCount}` : '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="内存">
-          {{ currentSubmission?.memoryUsed ? `${currentSubmission.memoryUsed}KB` : '-' }}
+        <el-descriptions-item label="最高用时">
+          {{ currentSubmission?.maxTimeUsed ? `${currentSubmission.maxTimeUsed}ms` : '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="通过率" v-if="currentSubmission?.passRate">
-          {{ currentSubmission.passRate }}
+        <el-descriptions-item label="最高内存">
+          {{ currentSubmission?.maxMemoryUsed ? `${currentSubmission.maxMemoryUsed}KB` : '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="提交时间">
           {{ currentSubmission?.createTime }}
+        </el-descriptions-item>
+        <el-descriptions-item label="完成时间">
+          {{ currentSubmission?.finishTime || '-' }}
         </el-descriptions-item>
       </el-descriptions>
 
@@ -47,6 +56,42 @@
       <div v-if="currentSubmission?.compileMessage" class="judge-info-section">
         <h3>编译信息</h3>
         <pre>{{ currentSubmission.compileMessage }}</pre>
+      </div>
+
+      <!-- 测试用例明细 -->
+      <div
+        v-if="currentSubmission?.caseResults && currentSubmission.caseResults.length > 0"
+        class="judge-info-section"
+      >
+        <h3>测试用例明细</h3>
+        <el-table :data="currentSubmission.caseResults" border stripe style="width: 100%">
+          <el-table-column prop="caseOrder" label="#" width="60" />
+          <el-table-column label="状态" width="120">
+            <template #default="{ row }">
+              <status-tag :status="row.status" />
+            </template>
+          </el-table-column>
+          <el-table-column label="得分" width="80">
+            <template #default="{ row }">
+              {{ row.score }}
+            </template>
+          </el-table-column>
+          <el-table-column label="用时" width="100">
+            <template #default="{ row }">
+              {{ row.timeUsed ? `${row.timeUsed}ms` : '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column label="内存" width="100">
+            <template #default="{ row }">
+              {{ row.memoryUsed ? `${row.memoryUsed}KB` : '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="errorMessage" label="错误信息" min-width="200">
+            <template #default="{ row }">
+              {{ row.errorMessage || '-' }}
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
     </el-card>
   </div>
