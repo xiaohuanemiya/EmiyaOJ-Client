@@ -4,7 +4,7 @@
     <el-card v-loading="loading">
       <template #header>
         <div class="header-content">
-          <h2>{{ isSolution ? '写题解' : '发布博客' }}</h2>
+          <h2>{{ blogForm.blogType === 1 ? '写题解' : '发布博客' }}</h2>
           <p v-if="isSolution" class="header-hint">
             为题目 #{{ problemIdFromQuery }} 写题解
           </p>
@@ -28,10 +28,47 @@
         </el-form-item>
 
         <el-form-item v-if="!isSolution" label="类型" prop="blogType">
-          <el-radio-group v-model="blogForm.blogType">
+          <el-radio-group v-model="blogForm.blogType" @change="handleBlogTypeChange">
             <el-radio :value="0">普通博客</el-radio>
             <el-radio :value="1">题解</el-radio>
           </el-radio-group>
+        </el-form-item>
+
+        <!-- 题解关联题目选择器 -->
+        <el-form-item
+          v-if="blogForm.blogType === 1 && !isSolution"
+          label="关联题目"
+          prop="problemId"
+        >
+          <el-select
+            v-model="blogForm.problemId"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请搜索并选择题目"
+            :remote-method="searchProblems"
+            :loading="problemSearchLoading"
+            style="width: 100%"
+            clearable
+          >
+            <el-option
+              v-for="problem in problemSearchResults"
+              :key="problem.id"
+              :label="`#${problem.id} ${problem.title}`"
+              :value="problem.id"
+            >
+              <span style="font-weight: 500">#{{ problem.id }}</span>
+              <span style="margin-left: 8px">{{ problem.title }}</span>
+              <el-tag
+                v-if="problem.difficultyDesc"
+                size="small"
+                style="margin-left: 8px"
+                :type="getDifficultyTagType(problem.difficulty)"
+              >
+                {{ problem.difficultyDesc }}
+              </el-tag>
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <el-form-item label="标签" prop="tagIds">
@@ -99,7 +136,7 @@
 
         <el-form-item>
           <el-button type="primary" :loading="submitting" @click="handleSubmit">
-            {{ isSolution ? '发布题解' : '发布博客' }}
+            {{ blogForm.blogType === 1 ? '发布题解' : '发布博客' }}
           </el-button>
           <el-button @click="handleCancel">取消</el-button>
         </el-form-item>
@@ -114,16 +151,24 @@ import { useRoute, useRouter } from 'vue-router'
 import { Delete } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useBlogStore } from '@/stores/blog'
+import { useProblemStore } from '@/stores/problem'
 import type { BlogPicture } from '@/types/blog'
+import type { Problem } from '@/types/problem'
 import MarkdownEditor from '@/components/MarkdownEditor/index.vue'
 
 const route = useRoute()
 const router = useRouter()
 const blogStore = useBlogStore()
+const problemStore = useProblemStore()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
+
+// 题目搜索相关
+const problemSearchResults = ref<Problem[]>([])
+const problemSearchLoading = ref(false)
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 const problemIdFromQuery = computed(() => {
   const raw = route.query.problemId
@@ -138,6 +183,7 @@ interface BlogFormData {
   blogType: number
   tagIds: string[]
   pictureIds: string[]
+  problemId: string
 }
 
 const blogForm = reactive<BlogFormData>({
@@ -145,10 +191,50 @@ const blogForm = reactive<BlogFormData>({
   content: '',
   blogType: isSolution.value ? 1 : 0,
   tagIds: [],
-  pictureIds: []
+  pictureIds: [],
+  problemId: problemIdFromQuery.value
 })
 
 const uploadedPictures = ref<BlogPicture[]>([])
+
+/** 远程搜索题目 */
+const searchProblems = (query: string) => {
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+  if (!query || query.trim().length === 0) {
+    problemSearchResults.value = []
+    return
+  }
+  searchTimer = setTimeout(async () => {
+    problemSearchLoading.value = true
+    try {
+      await problemStore.fetchProblems({
+        title: query.trim(),
+        pageNum: 1,
+        pageSize: 20
+      })
+      problemSearchResults.value = problemStore.problems
+    } finally {
+      problemSearchLoading.value = false
+    }
+  }, 300)
+}
+
+/** 处理博客类型变更 */
+const handleBlogTypeChange = (value: number) => {
+  if (value === 0) {
+    // 切换回普通博客时清空关联题目
+    blogForm.problemId = ''
+  }
+}
+
+/** 获取难度标签类型 */
+const getDifficultyTagType = (difficulty: number) => {
+  if (difficulty <= 1) return 'success'
+  if (difficulty === 2) return 'warning'
+  return 'danger'
+}
 
 const formRules = computed<FormRules<BlogFormData>>(() => ({
   title: [
@@ -158,6 +244,20 @@ const formRules = computed<FormRules<BlogFormData>>(() => ({
   content: [
     { required: true, message: '请输入博客内容', trigger: 'blur' },
     { max: 10000, message: '内容不能超过10000个字符', trigger: 'blur' }
+  ],
+  problemId: [
+    {
+      required: true,
+      message: '请选择关联的题目',
+      trigger: 'change',
+      validator: (_rule, value, callback) => {
+        if (blogForm.blogType === 1 && !isSolution.value && !value) {
+          callback(new Error('创建题解时必须选择关联的题目'))
+        } else {
+          callback()
+        }
+      }
+    }
   ],
   blogType: [],
   tagIds: [],
@@ -190,14 +290,17 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     let success = false
-    if (isSolution.value) {
-      success = await blogStore.addSolution(problemIdFromQuery.value, {
+    // 题解类型：使用 createSolution API
+    if (blogForm.blogType === 1) {
+      const targetProblemId = isSolution.value ? problemIdFromQuery.value : blogForm.problemId
+      success = await blogStore.addSolution(targetProblemId, {
         title: blogForm.title,
         content: blogForm.content,
         tagIds: blogForm.tagIds,
         pictureIds: blogForm.pictureIds
       })
     } else {
+      // 普通博客：使用 createBlog API
       success = await blogStore.addBlog({
         title: blogForm.title,
         content: blogForm.content,
@@ -208,8 +311,9 @@ const handleSubmit = async () => {
     }
     
     if (success) {
-      if (isSolution.value) {
-        router.push(`/problem/${problemIdFromQuery.value}/solutions`)
+      if (blogForm.blogType === 1) {
+        const targetProblemId = isSolution.value ? problemIdFromQuery.value : blogForm.problemId
+        router.push(`/problem/${targetProblemId}/solutions`)
       } else {
         router.push('/blogs')
       }
