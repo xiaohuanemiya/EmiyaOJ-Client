@@ -197,6 +197,7 @@ const editorShellRef = ref<HTMLDivElement>()
 const fileInputRef = ref<HTMLInputElement>()
 const mathInputRef = ref<{ textarea?: HTMLTextAreaElement; focus?: () => void }>()
 const uploading = ref(false)
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
 const showTableTools = ref(false)
 const hoveredCell = ref<HTMLTableCellElement | null>(null)
 const isSettingContent = ref(false)
@@ -497,6 +498,11 @@ const handleDrop = async (event: DragEvent) => {
 const uploadAndInsertImage = async (file: File) => {
   if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
     ElMessage.warning('仅支持 jpg、png、webp、gif 图片')
+    return
+  }
+
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    ElMessage.warning('图片大小不能超过 10M')
     return
   }
 
