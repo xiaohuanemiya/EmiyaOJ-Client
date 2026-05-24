@@ -29,6 +29,7 @@ export interface ProblemSetVO {
   title: string
   description: string
   creatorId: string
+  creatorNickname?: string
   status: number
   problemCount: number
   problems?: ProblemSetProblemVO[]

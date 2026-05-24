@@ -10,7 +10,7 @@
                 {{ problemSet?.status === 1 ? '公开' : '隐藏' }}
               </el-tag>
               <span>{{ problemSet?.problemCount ?? problemSetProblems.length }} 道题</span>
-              <span>创建者 {{ problemSet?.creatorId || '-' }}</span>
+              <span>创建者 {{ formatCreatorName(problemSet) }}</span>
             </div>
           </div>
           <div v-if="isOwner" class="header-actions">
@@ -73,6 +73,11 @@ const problemSetProblems = computed(() => {
 const isOwner = computed(() => {
   return !!problemSet.value && String(problemSet.value.creatorId) === String(authStore.user?.id)
 })
+
+const formatCreatorName = (value: typeof problemSet.value) => {
+  const nickname = value?.creatorNickname?.trim()
+  return nickname || value?.creatorId || '-'
+}
 
 const getDifficultyType = (difficulty: number) => {
   const types: Record<number, string> = { 1: 'success', 2: 'warning', 3: 'danger' }

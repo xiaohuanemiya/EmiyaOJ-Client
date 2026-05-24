@@ -77,7 +77,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="problemCount" label="题目数" width="100" />
-        <el-table-column prop="creatorId" label="创建者" width="140" />
+        <el-table-column label="创建者" width="160">
+          <template #default="{ row }">{{ formatCreatorName(row) }}</template>
+        </el-table-column>
         <el-table-column label="更新时间" width="180">
           <template #default="{ row }">{{ formatDate(row.updateTime || row.createTime) }}</template>
         </el-table-column>
@@ -124,6 +126,11 @@ const isMyFilter = computed(() => {
 })
 
 const formatDate = (value?: string) => (value ? formatDateTime(value) : '-')
+
+const formatCreatorName = (problemSet: ProblemSetVO) => {
+  const nickname = problemSet.creatorNickname?.trim()
+  return nickname || problemSet.creatorId || '-'
+}
 
 const toggleMyProblemSets = () => {
   if (isMyFilter.value) {

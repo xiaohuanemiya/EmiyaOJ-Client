@@ -28,6 +28,10 @@ const service: AxiosInstance = axios.create({
 
 // 扩展 InternalAxiosRequestConfig，支持 skipAuth 标记
 declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipAuth?: boolean
+  }
+
   interface InternalAxiosRequestConfig {
     skipAuth?: boolean
   }

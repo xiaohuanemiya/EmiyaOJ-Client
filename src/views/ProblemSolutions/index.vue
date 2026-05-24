@@ -57,7 +57,7 @@
           <div class="solution-footer">
             <span class="solution-meta">
               <el-icon><User /></el-icon>
-              用户 {{ solution.userId }}
+              {{ formatAuthorName(solution) }}
             </span>
             <span class="solution-meta">
               <el-icon><Calendar /></el-icon>
@@ -149,6 +149,11 @@ const truncateContent = (content: string) => {
 
 const formatDate = (dateStr: string) => {
   return formatDateTime(dateStr)
+}
+
+const formatAuthorName = (blog: Blog) => {
+  const nickname = blog.authorNickname?.trim()
+  return nickname || `用户 ${blog.userId}`
 }
 
 onMounted(() => {
