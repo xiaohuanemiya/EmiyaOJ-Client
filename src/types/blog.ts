@@ -29,6 +29,7 @@ export interface BlogPicture {
 export interface Blog {
   id: string
   userId: string
+  authorNickname?: string
   title: string
   content: string
   blogType: number        // 0=普通博客, 1=题解

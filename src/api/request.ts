@@ -26,13 +26,26 @@ const service: AxiosInstance = axios.create({
   }]
 })
 
+// 扩展 InternalAxiosRequestConfig，支持 skipAuth 标记
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipAuth?: boolean
+  }
+
+  interface InternalAxiosRequestConfig {
+    skipAuth?: boolean
+  }
+}
+
 // 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // 添加token到请求头
-    const token = getToken()
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`
+    // 添加token到请求头（标记了 skipAuth 的请求除外，如注册接口）
+    if (!config.skipAuth) {
+      const token = getToken()
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
     }
     return config
   },

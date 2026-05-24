@@ -11,7 +11,8 @@ export const register = (data: RegisterParams): Promise<ApiResponse<null>> => {
   return request({
     url: '/auth/register',
     method: 'POST',
-    data
+    data,
+    skipAuth: true
   })
 }
 
@@ -23,7 +24,8 @@ export const login = (data: LoginParams): Promise<ApiResponse<LoginResponse>> =>
   return request({
     url: '/auth/login',
     method: 'POST',
-    data
+    data,
+    skipAuth: true
   })
 }
 

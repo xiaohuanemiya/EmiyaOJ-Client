@@ -19,7 +19,7 @@
                     class="author-link" 
                     @click="handleAuthorClick(blogStore.currentBlog!.userId)"
                   >
-                    用户 {{ blogStore.currentBlog.userId }}
+                    {{ formatAuthorName(blogStore.currentBlog.authorNickname, blogStore.currentBlog.userId) }}
                   </span>
                 </span>
                 <span class="meta-item">
@@ -217,6 +217,11 @@ const isAuthor = computed(() => {
 
 const formatDate = (dateStr: string) => {
   return formatDateTime(dateStr)
+}
+
+const formatAuthorName = (nickname: string | undefined, userId: string) => {
+  const trimmed = nickname?.trim()
+  return trimmed || `用户 ${userId}`
 }
 
 const handleAuthorClick = (userId: string) => {

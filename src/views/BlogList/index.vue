@@ -118,7 +118,7 @@
             </span>
             <span class="blog-author">
               <el-icon><User /></el-icon>
-              用户 {{ blog.userId }}
+              {{ formatAuthorName(blog) }}
             </span>
             <span class="blog-stats">
               <span class="stat-item">
@@ -204,6 +204,11 @@ const truncateContent = (content: string) => {
 
 const formatDate = (dateStr: string) => {
   return formatDateTime(dateStr)
+}
+
+const formatAuthorName = (blog: Blog) => {
+  const nickname = blog.authorNickname?.trim()
+  return nickname || `用户 ${blog.userId}`
 }
 
 onMounted(() => {
