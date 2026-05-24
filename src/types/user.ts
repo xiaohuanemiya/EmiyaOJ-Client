@@ -17,6 +17,17 @@ export interface User {
 }
 
 /**
+ * 注册参数
+ */
+export interface RegisterParams {
+  username: string
+  password: string
+  nickname: string
+  email: string
+  phone?: string
+}
+
+/**
  * 登录参数
  */
 export interface LoginParams {

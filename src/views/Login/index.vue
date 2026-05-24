@@ -52,6 +52,11 @@
             登录
           </el-button>
         </el-form-item>
+
+        <div class="form-footer">
+          还没有账号？
+          <router-link to="/register">前往注册</router-link>
+        </div>
       </el-form>
     </el-card>
   </div>
@@ -121,6 +126,21 @@ const handleLogin = async () => {
     h2 {
       margin: 0;
       color: #303133;
+    }
+  }
+}
+
+.form-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #909399;
+
+  a {
+    color: #409eff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
     }
   }
 }

@@ -2,8 +2,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { jwtDecode } from 'jwt-decode'
-import type { User, LoginParams, TokenPayload } from '@/types/user'
-import { login as loginApi, logout as logoutApi } from '@/api/auth'
+import type { User, LoginParams, RegisterParams, TokenPayload } from '@/types/user'
+import { login as loginApi, register as registerApi, logout as logoutApi } from '@/api/auth'
 import { setToken, getToken, removeToken } from '@/utils/storage'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -119,6 +119,26 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * 用户注册
+   */
+  const register = async (params: RegisterParams) => {
+    isLoading.value = true
+    try {
+      const response = await registerApi(params)
+      if (response.code === 200) {
+        return { success: true, message: response.message || '注册成功' }
+      }
+      return { success: false, message: response.message || '注册失败' }
+    } catch (error: any) {
+      console.error('Register failed:', error)
+      const message = error?.response?.data?.message || error?.message || '注册失败'
+      return { success: false, message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const logout = async () => {
     try {
       await logoutApi()
@@ -146,6 +166,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     username,
     login,
+    register,
     logout,
     setUserInfo,
     hasPermission,
