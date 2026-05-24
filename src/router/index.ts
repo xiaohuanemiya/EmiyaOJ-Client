@@ -15,6 +15,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/register',
+      name: 'Register',
+      component: () => import('@/views/Register/index.vue'),
+      meta: {
+        requiresAuth: false,
+        title: '注册'
+      }
+    },
+    {
       path: '/',
       component: () => import('@/layouts/DefaultLayout.vue'),
       children: [
@@ -210,8 +219,8 @@ router.beforeEach((to, from, next) => {
       name: 'Login',
       query: { redirect: to.fullPath }
     })
-  } else if (to.name === 'Login' && authStore.isAuthenticated) {
-    // 已登录用户访问登录页，重定向到首页
+  } else if ((to.name === 'Login' || to.name === 'Register') && authStore.isAuthenticated) {
+    // 已登录用户访问登录/注册页，重定向到首页
     next({ name: 'Home' })
   } else {
     next()

@@ -1,7 +1,19 @@
 // src/api/auth.ts
 import request from './request'
 import type { ApiResponse } from '@/types/api'
-import type { LoginParams, LoginResponse } from '@/types/user'
+import type { LoginParams, LoginResponse, RegisterParams } from '@/types/user'
+
+/**
+ * 用户注册
+ * POST /auth/register
+ */
+export const register = (data: RegisterParams): Promise<ApiResponse<null>> => {
+  return request({
+    url: '/auth/register',
+    method: 'POST',
+    data
+  })
+}
 
 /**
  * 用户登录
