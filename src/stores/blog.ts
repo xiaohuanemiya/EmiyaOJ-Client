@@ -1,7 +1,7 @@
 // src/stores/blog.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Blog, BlogTag, BlogPicture, BlogQueryParams, Comment, UserBlogInfo, CommentQueryParams, UserBlogQueryParams, UserStarQueryParams } from '@/types/blog'
+import type { Blog, BlogTag, BlogPicture, BlogQueryParams, Comment, UserBlogInfo, CommentQueryParams, UserBlogQueryParams, UserLikeQueryParams, UserStarQueryParams } from '@/types/blog'
 import {
   queryBlogs,
   getBlogDetail,
@@ -21,6 +21,7 @@ import {
   deleteComment,
   getUserBlogInfo,
   queryUserBlogs,
+  queryUserLikedBlogs,
   queryUserStarredBlogs
 } from '@/api/blog'
 import type { CreateBlogParams, CreateCommentParams, SolutionQueryParams } from '@/types/blog'
@@ -56,6 +57,8 @@ export const useBlogStore = defineStore('blog', () => {
   const userBlogsTotal = ref(0)
   const userStarredBlogs = ref<Blog[]>([])
   const userStarredTotal = ref(0)
+  const userLikedBlogs = ref<Blog[]>([])
+  const userLikedTotal = ref(0)
 
   // Actions - 博客查询
   const fetchBlogs = async (params: BlogQueryParams) => {
@@ -316,6 +319,21 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
+  const fetchUserLikedBlogs = async (userId: string, params: UserLikeQueryParams) => {
+    loading.value = true
+    try {
+      const response = await queryUserLikedBlogs(userId, params)
+      if (response.code === 200 && response.data) {
+        userLikedBlogs.value = response.data.list
+        userLikedTotal.value = response.data.total
+      }
+    } catch (error) {
+      console.error('Failed to fetch user liked blogs:', error)
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 清空
   const clearCurrentBlog = () => {
     currentBlog.value = null
@@ -324,6 +342,15 @@ export const useBlogStore = defineStore('blog', () => {
   const clearComments = () => {
     comments.value = []
     commentsTotal.value = 0
+  }
+
+  const clearUserBlogLists = () => {
+    userBlogs.value = []
+    userBlogsTotal.value = 0
+    userStarredBlogs.value = []
+    userStarredTotal.value = 0
+    userLikedBlogs.value = []
+    userLikedTotal.value = 0
   }
 
   return {
@@ -346,6 +373,8 @@ export const useBlogStore = defineStore('blog', () => {
     userBlogsTotal,
     userStarredBlogs,
     userStarredTotal,
+    userLikedBlogs,
+    userLikedTotal,
 
     // Actions
     fetchBlogs,
@@ -365,7 +394,9 @@ export const useBlogStore = defineStore('blog', () => {
     fetchUserBlogInfo,
     fetchUserBlogs,
     fetchUserStarredBlogs,
+    fetchUserLikedBlogs,
     clearCurrentBlog,
-    clearComments
+    clearComments,
+    clearUserBlogLists
   }
 })

@@ -50,8 +50,19 @@ export interface LoginResponse {
  */
 export interface TokenPayload {
   permissions: string[]
-  userId: string
-  username: string
+  userId?: string
+  id?: string
+  sub?: string
+  username?: string
   iat: number
   exp: number
+}
+
+/**
+ * Token 解析响应
+ */
+export interface UserAuthDTO {
+  userId: string
+  username: string
+  permissions: string[]
 }

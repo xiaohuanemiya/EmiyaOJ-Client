@@ -55,10 +55,10 @@
           </div>
           <p class="solution-content">{{ truncateContent(solution.content) }}</p>
           <div class="solution-footer">
-            <span class="solution-meta">
+            <button class="solution-author" type="button" @click.stop="handleAuthorClick(solution.userId)">
               <el-icon><User /></el-icon>
               {{ formatAuthorName(solution) }}
-            </span>
+            </button>
             <span class="solution-meta">
               <el-icon><Calendar /></el-icon>
               {{ formatDate(solution.createTime) }}
@@ -137,6 +137,10 @@ const handleBackToProblem = () => {
 
 const handleSolutionClick = (solution: Blog) => {
   router.push(`/blog/${solution.id}`)
+}
+
+const handleAuthorClick = (userId: string) => {
+  router.push(`/user/${userId}`)
 }
 
 const truncateContent = (content: string) => {
@@ -245,6 +249,22 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.solution-author {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #909399;
+  font: inherit;
+  cursor: pointer;
+}
+
+.solution-author:hover {
+  color: #409eff;
 }
 
 .solution-stats {
