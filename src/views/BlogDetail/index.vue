@@ -225,7 +225,7 @@ const formatAuthorName = (nickname: string | undefined, userId: string) => {
 }
 
 const handleAuthorClick = (userId: string) => {
-  router.push(`/blog/user/${userId}`)
+  router.push(`/user/${userId}`)
 }
 
 const handleProblemClick = (problemId: string) => {

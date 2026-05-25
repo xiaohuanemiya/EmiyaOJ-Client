@@ -3,8 +3,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { jwtDecode } from 'jwt-decode'
 import type { User, LoginParams, RegisterParams, TokenPayload } from '@/types/user'
-import { login as loginApi, register as registerApi, logout as logoutApi } from '@/api/auth'
-import { setToken, getToken, removeToken } from '@/utils/storage'
+import { login as loginApi, register as registerApi, logout as logoutApi, parseToken as parseTokenApi } from '@/api/auth'
+import { setToken, getToken, removeToken, setUser, getUser, removeUser } from '@/utils/storage'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -44,11 +44,34 @@ export const useAuthStore = defineStore('auth', () => {
         return false
       }
 
+      const cachedUser = getUser() as User | null
+      const legacyPayload = payload as TokenPayload & {
+        user_id?: string
+        uid?: string
+        UserId?: string
+      }
+      const userId = payload.userId
+        || payload.id
+        || payload.sub
+        || legacyPayload.user_id
+        || legacyPayload.uid
+        || legacyPayload.UserId
+        || cachedUser?.id
+      const payloadUsername = payload.username || cachedUser?.username || ''
+
+      if (!userId) {
+        user.value = cachedUser
+        permissions.value = payload.permissions || []
+        return !!cachedUser
+      }
+
       // 装载用户基本信息
       user.value = {
-        id: String(payload.userId),
-        username: payload.username,
-        nickname: '' // token 中不包含 nickname，登录时会被覆盖
+        id: String(userId),
+        username: payloadUsername,
+        nickname: cachedUser?.nickname || '',
+        avatar: cachedUser?.avatar,
+        createTime: cachedUser?.createTime
       }
 
       // 装载权限列表
@@ -70,6 +93,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     permissions.value = []
     removeToken()
+    removeUser()
   }
 
   /**
@@ -107,6 +131,7 @@ export const useAuthStore = defineStore('auth', () => {
           username: uname,
           nickname
         }
+        setUser(user.value)
 
         return true
       }
@@ -151,6 +176,42 @@ export const useAuthStore = defineStore('auth', () => {
 
   const setUserInfo = (userInfo: User) => {
     user.value = userInfo
+    setUser(userInfo)
+  }
+
+  /**
+   * 从服务端解析 token 补齐用户 ID，用于兼容旧登录态刷新
+   */
+  const hydrateFromToken = async (): Promise<boolean> => {
+    const existingId = user.value?.id
+    if (existingId && existingId !== 'undefined' && existingId !== 'null') {
+      return true
+    }
+
+    const jwt = token.value || getToken()
+    if (!jwt) return false
+
+    try {
+      const response = await parseTokenApi(jwt)
+      if (response.code === 200 && response.data?.userId) {
+        token.value = jwt
+        const cachedUser = getUser() as User | null
+        user.value = {
+          id: String(response.data.userId),
+          username: response.data.username || cachedUser?.username || '',
+          nickname: cachedUser?.nickname || response.data.username || '',
+          avatar: cachedUser?.avatar,
+          createTime: cachedUser?.createTime
+        }
+        permissions.value = response.data.permissions || []
+        setUser(user.value)
+        return true
+      }
+    } catch (error) {
+      console.error('Failed to hydrate user from token:', error)
+    }
+
+    return false
   }
 
   // 初始化：页面加载/刷新时从 localStorage 中的 token 恢复状态
@@ -169,6 +230,7 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     setUserInfo,
+    hydrateFromToken,
     hasPermission,
     hasAnyPermission,
     isTokenExpired,

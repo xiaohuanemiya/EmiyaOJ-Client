@@ -116,10 +116,10 @@
               <el-icon><Calendar /></el-icon>
               {{ formatDate(blog.createTime) }}
             </span>
-            <span class="blog-author">
+            <button class="blog-author" type="button" @click.stop="handleAuthorClick(blog.userId)">
               <el-icon><User /></el-icon>
               {{ formatAuthorName(blog) }}
-            </span>
+            </button>
             <span class="blog-stats">
               <span class="stat-item">
                 <el-icon><View /></el-icon>
@@ -192,6 +192,10 @@ const handleCreate = () => {
 
 const handleBlogClick = (blog: Blog) => {
   router.push(`/blog/${blog.id}`)
+}
+
+const handleAuthorClick = (userId: string) => {
+  router.push(`/user/${userId}`)
 }
 
 const truncateContent = (content: string) => {
@@ -299,10 +303,24 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.blog-footer span {
+.blog-footer span,
+.blog-author {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.blog-author {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #909399;
+  font: inherit;
+  cursor: pointer;
+}
+
+.blog-author:hover {
+  color: #409eff;
 }
 
 .pagination-container {

@@ -98,6 +98,7 @@ export interface UserBlogInfo {
   nickname: string
   blogCount: number
   starCount: number
+  likedBlogCount?: number
 }
 
 /**
@@ -128,15 +129,25 @@ export interface CreateCommentParams {
  * 用户博客查询参数（POST /blog/user/{uid}/blogs/query）
  */
 export interface UserBlogQueryParams {
-  userId: string
+  userId?: string
   pageNo: number
   pageSize: number
+  auditStatus?: number
 }
 
 /**
  * 用户收藏博客查询参数（POST /blog/user/{uid}/stars/query）
  */
 export interface UserStarQueryParams {
+  userId?: string
+  pageNo: number
+  pageSize: number
+}
+
+/**
+ * 用户点赞博客查询参数（POST /blog/user/{uid}/likes/query）
+ */
+export interface UserLikeQueryParams {
   userId?: string
   pageNo: number
   pageSize: number

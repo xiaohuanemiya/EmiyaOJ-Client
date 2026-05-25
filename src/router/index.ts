@@ -144,6 +144,15 @@ const router = createRouter({
             title: '个人中心'
           }
         },
+        {
+          path: 'user/:userId',
+          name: 'UserProfile',
+          component: () => import('@/views/Profile/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '个人中心'
+          }
+        },
         // 博客相关路由
         {
           path: 'blogs',
@@ -184,7 +193,12 @@ const router = createRouter({
         {
           path: 'blog/user/:uid',
           name: 'UserBlog',
-          component: () => import('@/views/UserBlog/index.vue'),
+          redirect: (to) => ({
+            name: 'UserProfile',
+            params: {
+              userId: to.params.uid
+            }
+          }),
           meta: {
             requiresAuth: true,
             title: '用户博客'

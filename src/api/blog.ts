@@ -1,6 +1,7 @@
 // src/api/blog.ts
 import request from './request'
 import { useAuthStore } from '@/stores/auth'
+import { getUser } from '@/utils/storage'
 import type { ApiResponse, PageResult } from '@/types/api'
 import type {
   Blog,
@@ -15,14 +16,18 @@ import type {
   CommentSearchParams,
   CreateCommentParams,
   UserBlogQueryParams,
+  UserLikeQueryParams,
   UserStarQueryParams
 } from '@/types/blog'
 
 /** 获取当前用户 ID，用于 X-User-Id 请求头 */
 const getUserIdHeader = () => {
   const authStore = useAuthStore()
-  const userId = authStore.user?.id
-  return userId ? { 'X-User-Id': userId } : {}
+  const cachedUser = getUser()
+  const userId = authStore.user?.id || cachedUser?.id
+  return userId && userId !== 'undefined' && userId !== 'null'
+    ? { 'X-User-Id': String(userId) }
+    : {}
 }
 
 /**
@@ -278,7 +283,10 @@ export const queryUserBlogs = (
   return request({
     url: `/blog/user/${uid}/blogs/query`,
     method: 'POST',
-    data
+    data: {
+      ...data,
+      auditStatus: 1
+    }
   })
 }
 
@@ -292,6 +300,21 @@ export const queryUserStarredBlogs = (
 ): Promise<ApiResponse<PageResult<Blog>>> => {
   return request({
     url: `/blog/user/${uid}/stars/query`,
+    method: 'POST',
+    data
+  })
+}
+
+/**
+ * 分页查询用户点赞过的博客
+ * POST /blog/user/{uid}/likes/query
+ */
+export const queryUserLikedBlogs = (
+  uid: string,
+  data: UserLikeQueryParams
+): Promise<ApiResponse<PageResult<Blog>>> => {
+  return request({
+    url: `/blog/user/${uid}/likes/query`,
     method: 'POST',
     data
   })
