@@ -3,6 +3,16 @@
 /**
  * 题目信息（题目详情 VO）
  */
+export interface ProblemPicture {
+  id: string
+  problemId: string | null
+  url: string
+  contentType: string
+  size: number
+  originalFilename: string
+  createTime: string
+}
+
 export interface Problem {
   id: string
   title: string
@@ -23,6 +33,7 @@ export interface Problem {
   submitCount: number
   status?: number
   tags?: string[]
+  pictures?: ProblemPicture[]
   createTime: string
   updateTime?: string
 }
@@ -66,4 +77,5 @@ export interface ProblemSaveDTO {
   source?: string
   status?: number        // 0-隐藏，1-公开，默认 1
   tagIds?: string[]      // 关联标签 ID 列表
+  pictureIds?: string[]
 }
