@@ -28,6 +28,7 @@ export interface Submission {
  */
 export interface SubmissionDetailVO extends Submission {
   caseResults: SubmissionCaseResultVO[]
+  feedback: JudgeFeedbackVO | null
 }
 
 /**
@@ -43,8 +44,35 @@ export interface SubmissionCaseResultVO {
   timeUsed: number
   memoryUsed: number
   errorMessage: string | null
+  isSample: 0 | 1
+  inputPreview: string | null
+  expectedOutputPreview: string | null
+  actualOutputPreview: string | null
+  outputDiffSummary: string | null
   createTime: string
 }
+
+/**
+ * 智能判题反馈
+ */
+export interface JudgeFeedbackVO {
+  id: string
+  submissionId: string
+  status: 'SUCCESS' | string
+  content: string | null
+  source: 'LLM' | string | null
+  model: string | null
+  agentType: 'JUDGE_FEEDBACK' | string
+  traceId: string | null
+  errorMessage: string | null
+  createTime: string
+  updateTime: string
+}
+
+export type SubmissionFeedbackFetchResult =
+  | { state: 'ready'; feedback: JudgeFeedbackVO }
+  | { state: 'pending' }
+  | { state: 'error' }
 
 /**
  * 代码提交参数（POST /judge/submit）
