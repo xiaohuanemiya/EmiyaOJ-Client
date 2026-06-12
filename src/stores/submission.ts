@@ -1,8 +1,19 @@
 // src/stores/submission.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Submission, SubmissionDetailVO, SubmitCodeParams, MySubmissionQueryParams } from '@/types/submission'
-import { submitCode as submitCodeApi, getMySubmissions, getSubmissionDetail } from '@/api/submission'
+import type {
+  Submission,
+  SubmissionDetailVO,
+  SubmissionFeedbackFetchResult,
+  SubmitCodeParams,
+  MySubmissionQueryParams
+} from '@/types/submission'
+import {
+  submitCode as submitCodeApi,
+  getMySubmissions,
+  getSubmissionDetail,
+  getSubmissionFeedback
+} from '@/api/submission'
 
 export const useSubmissionStore = defineStore('submission', () => {
   // State
@@ -40,17 +51,43 @@ export const useSubmissionStore = defineStore('submission', () => {
     }
   }
 
-  const fetchSubmissionDetail = async (id: string) => {
-    loading.value = true
+  const fetchSubmissionDetail = async (
+    id: string,
+    silent = false
+  ): Promise<SubmissionDetailVO | null> => {
+    if (!silent) {
+      loading.value = true
+    }
     try {
       const response = await getSubmissionDetail(id)
       if (response.code === 200 && response.data) {
         currentSubmission.value = response.data
+        return response.data
       }
+      return null
     } catch (error) {
       console.error('Failed to fetch submission detail:', error)
+      return null
     } finally {
-      loading.value = false
+      if (!silent) {
+        loading.value = false
+      }
+    }
+  }
+
+  const fetchSubmissionFeedback = async (id: string): Promise<SubmissionFeedbackFetchResult> => {
+    try {
+      const response = await getSubmissionFeedback(id)
+      if (response.code === 200 && response.data) {
+        if (currentSubmission.value && String(currentSubmission.value.id) === String(id)) {
+          currentSubmission.value.feedback = response.data
+        }
+        return { state: 'ready', feedback: response.data }
+      }
+      return { state: 'pending' }
+    } catch (error) {
+      console.error('Failed to fetch submission feedback:', error)
+      return { state: 'error' }
     }
   }
 
@@ -61,6 +98,7 @@ export const useSubmissionStore = defineStore('submission', () => {
     loading,
     submitCode,
     fetchMySubmissions,
-    fetchSubmissionDetail
+    fetchSubmissionDetail,
+    fetchSubmissionFeedback
   }
 })

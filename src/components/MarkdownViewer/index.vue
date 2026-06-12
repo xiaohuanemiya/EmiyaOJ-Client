@@ -8,6 +8,7 @@ import { nextTick, onMounted, ref, watch } from 'vue'
 import VditorPreview from 'vditor/dist/method'
 import 'vditor/dist/index.css'
 import 'katex/dist/katex.min.css'
+import { applyProblemImageSizes } from '@/utils/problem-markdown'
 
 interface Props {
   content: string
@@ -15,7 +16,9 @@ interface Props {
 
 const props = defineProps<Props>()
 const viewerRef = ref<HTMLDivElement>()
-let renderVersion = 0
+let requestedRenderVersion = 0
+let completedRenderVersion = 0
+let renderQueue: Promise<void> | null = null
 
 const bindImagePreview = () => {
   if (!viewerRef.value) return
@@ -25,30 +28,68 @@ const bindImagePreview = () => {
   })
 }
 
-const renderMarkdown = async () => {
-  if (!viewerRef.value) return
+const runRenderQueue = async () => {
+  while (completedRenderVersion < requestedRenderVersion) {
+    const currentVersion = requestedRenderVersion
+    const content = props.content || ''
+    await nextTick()
 
-  const currentVersion = ++renderVersion
-  await nextTick()
-  if (!viewerRef.value || currentVersion !== renderVersion) return
+    if (!viewerRef.value) {
+      completedRenderVersion = currentVersion
+      continue
+    }
 
-  await VditorPreview.preview(viewerRef.value, props.content || '', {
-    mode: 'light',
-    lang: 'zh_CN',
-    hljs: {
-      enable: true,
-      style: 'github'
-    },
-    markdown: {
-      toc: false,
-      mark: true,
-      footnotes: true,
-      autoSpace: true
-    },
-    after() {
-      bindImagePreview()
+    const stagingElement = document.createElement('div')
+    try {
+      await VditorPreview.preview(stagingElement, content, {
+        mode: 'light',
+        cdn: '/vendor/vditor',
+        lang: 'zh_CN',
+        hljs: {
+          enable: true,
+          lineNumber: false,
+          style: 'github'
+        },
+        math: {
+          engine: 'KaTeX',
+          inlineDigit: true
+        },
+        markdown: {
+          toc: false,
+          mark: true,
+          footnotes: true,
+          autoSpace: true
+        }
+      })
+    } catch (error) {
+      console.error('Failed to render markdown:', error)
+      completedRenderVersion = currentVersion
+      continue
+    }
+
+    completedRenderVersion = currentVersion
+    if (!viewerRef.value || currentVersion !== requestedRenderVersion) continue
+
+    viewerRef.value.replaceChildren(...stagingElement.childNodes)
+    applyProblemImageSizes(viewerRef.value)
+    bindImagePreview()
+  }
+}
+
+const startRenderQueue = () => {
+  if (renderQueue) return
+
+  renderQueue = runRenderQueue().finally(() => {
+    renderQueue = null
+    if (completedRenderVersion < requestedRenderVersion) {
+      startRenderQueue()
     }
   })
+}
+
+const renderMarkdown = () => {
+  requestedRenderVersion += 1
+  startRenderQueue()
 }
 
 onMounted(() => {
@@ -65,8 +106,10 @@ watch(
 
 <style scoped lang="scss">
 .markdown-viewer {
+  min-width: 0;
   line-height: 1.6;
   color: #333;
+  word-break: break-word;
 
   :deep(img) {
     max-width: 100%;
