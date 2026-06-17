@@ -33,6 +33,45 @@
         </el-space>
       </div>
 
+      <!-- 为你推荐模块（仅登录用户可见） -->
+      <div v-if="authStore.isAuthenticated && !lpStore.loading && lpStore.recommendation && lpStore.recommendation.recommendations.length > 0" class="recommend-bar">
+        <div class="recommend-bar-header">
+          <span class="recommend-bar-title">
+            <el-icon><Opportunity /></el-icon>
+            为你推荐
+          </span>
+          <el-tag
+            v-if="lpStore.recommendation.source === 'LLM'"
+            type="primary"
+            effect="dark"
+            size="small"
+            class="ai-badge-mini"
+          >
+            <el-icon><Cpu /></el-icon>
+            AI
+          </el-tag>
+        </div>
+        <div class="recommend-bar-items">
+          <div
+            v-for="problem in lpStore.recommendation.recommendations"
+            :key="problem.problemId"
+            class="recommend-bar-item"
+            @click="router.push(`/problem/${problem.problemId}`)"
+          >
+            <span class="rec-bar-id">#{{ problem.problemId }}</span>
+            <span class="rec-bar-title">{{ problem.title }}</span>
+            <el-tag
+              :type="getDifficultyType(problem.difficulty)"
+              size="small"
+              effect="dark"
+            >
+              {{ problem.difficultyDesc }}
+            </el-tag>
+            <span class="rec-bar-reason">{{ problem.reason }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- 题目表格 -->
       <el-table
         v-loading="problemStore.loading"
@@ -90,12 +129,16 @@
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Cpu, Opportunity } from '@element-plus/icons-vue'
 import { useProblemStore } from '@/stores/problem'
+import { useAuthStore } from '@/stores/auth'
+import { useLearningPathStore } from '@/stores/learningPath'
 import type { ProblemQueryParams } from '@/types/problem'
 
 const router = useRouter()
 const problemStore = useProblemStore()
+const authStore = useAuthStore()
+const lpStore = useLearningPathStore()
 
 const queryParams = reactive<ProblemQueryParams>({
   pageNum: 1,
@@ -142,6 +185,9 @@ const formatPassRate = (problem: any) => {
 
 onMounted(() => {
   problemStore.fetchProblems(queryParams)
+  if (authStore.isAuthenticated) {
+    lpStore.fetchRecommendations(4)
+  }
 })
 </script>
 
@@ -169,6 +215,98 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     margin-top: 20px;
+  }
+
+  // 推荐模块
+  .recommend-bar {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+    border: 1px solid #e8e0f0;
+    border-radius: 12px;
+
+    .recommend-bar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+
+      .recommend-bar-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #4c4f6b;
+
+        .el-icon {
+          color: #7c3aed;
+        }
+      }
+
+      .ai-badge-mini {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: transparent;
+        font-weight: 600;
+        font-size: 11px;
+        height: 22px;
+        line-height: 22px;
+        padding: 0 8px;
+      }
+    }
+
+    .recommend-bar-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 8px;
+
+      .recommend-bar-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid #f0f0f0;
+        transition: all 0.2s ease;
+        overflow: hidden;
+
+        &:hover {
+          border-color: #c4b5fd;
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        .rec-bar-id {
+          font-size: 12px;
+          color: #a0aec0;
+          font-family: monospace;
+          font-weight: 600;
+          flex-shrink: 0;
+        }
+
+        .rec-bar-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1a202c;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .rec-bar-reason {
+          font-size: 12px;
+          color: #a0aec0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 180px;
+          flex-shrink: 1;
+        }
+      }
+    }
   }
   
   :deep(.el-table__row) {

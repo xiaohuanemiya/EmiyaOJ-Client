@@ -17,6 +17,7 @@
           >
             <el-menu-item index="/">首页</el-menu-item>
             <el-menu-item index="/problems">题库</el-menu-item>
+            <el-menu-item index="/recommend">推荐</el-menu-item>
             <el-menu-item index="/contests">比赛</el-menu-item>
             <el-menu-item index="/problem-sets">题单</el-menu-item>
             <el-menu-item index="/blogs">博客</el-menu-item>

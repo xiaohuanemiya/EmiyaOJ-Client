@@ -127,6 +127,15 @@ const router = createRouter({
           }
         },
         {
+          path: 'recommend',
+          name: 'LearningPath',
+          component: () => import('@/views/LearningPath/index.vue'),
+          meta: {
+            requiresAuth: true,
+            title: '为你推荐'
+          }
+        },
+        {
           path: 'submission/:id',
           name: 'SubmissionDetail',
           component: () => import('@/views/SubmissionDetail/index.vue'),

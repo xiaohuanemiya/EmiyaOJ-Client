@@ -74,14 +74,91 @@
         </el-col>
       </el-row>
     </el-card>
+
+    <!-- 为你推荐模块（仅登录用户可见） -->
+    <el-card v-if="authStore.isAuthenticated && !lpStore.loading && lpStore.recommendation && lpStore.recommendation.recommendations.length > 0" class="recommend-card">
+      <template #header>
+        <div class="recommend-header">
+          <h2>
+            <span class="recommend-title-gradient">为你推荐</span>
+          </h2>
+          <div class="recommend-header-right">
+            <el-tag
+              v-if="lpStore.recommendation.source === 'LLM'"
+              type="primary"
+              effect="dark"
+              size="small"
+              class="ai-badge-mini"
+            >
+              <el-icon><Cpu /></el-icon>
+              AI 推荐
+            </el-tag>
+            <el-button text size="small" type="primary" @click="router.push('/recommend')">
+              查看全部
+              <el-icon><Right /></el-icon>
+            </el-button>
+          </div>
+        </div>
+      </template>
+
+      <div class="recommend-summary">
+        <el-icon class="summary-icon"><Opportunity /></el-icon>
+        <span>{{ lpStore.recommendation.summary }}</span>
+      </div>
+
+      <div class="recommend-problems">
+        <div
+          v-for="problem in lpStore.recommendation.recommendations"
+          :key="problem.problemId"
+          class="recommend-item"
+          @click="router.push(`/problem/${problem.problemId}`)"
+        >
+          <div class="recommend-item-left">
+            <span class="rec-problem-id">#{{ problem.problemId }}</span>
+            <el-tag
+              :type="getDifficultyType(problem.difficulty)"
+              size="small"
+              effect="dark"
+            >
+              {{ problem.difficultyDesc }}
+            </el-tag>
+            <span class="rec-problem-title">{{ problem.title }}</span>
+          </div>
+          <div class="recommend-item-right">
+            <span class="rec-accept-rate">{{ formatAcceptRate(problem.acceptRate) }}</span>
+            <el-icon><Right /></el-icon>
+          </div>
+        </div>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Document, User, TrendCharts } from '@element-plus/icons-vue'
+import { Document, User, TrendCharts, Cpu, Opportunity, Right } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/auth'
+import { useLearningPathStore } from '@/stores/learningPath'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const lpStore = useLearningPathStore()
+
+const getDifficultyType = (difficulty: number) => {
+  const types: Record<number, string> = { 1: 'success', 2: 'warning', 3: 'danger' }
+  return types[difficulty] || 'info'
+}
+
+const formatAcceptRate = (rate: number) => {
+  return `${rate.toFixed(1)}%`
+}
+
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    lpStore.fetchRecommendations(4)
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -158,6 +235,115 @@ const router = useRouter()
       p {
         color: #606266;
         line-height: 1.6;
+      }
+    }
+  }
+
+  // 推荐模块
+  .recommend-card {
+    margin-top: 30px;
+
+    .recommend-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h2 {
+        margin: 0;
+
+        .recommend-title-gradient {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+      }
+
+      .recommend-header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .ai-badge-mini {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          border-color: transparent;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .recommend-summary {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #4c4f6b;
+      line-height: 1.6;
+
+      .summary-icon {
+        flex-shrink: 0;
+        font-size: 20px;
+        color: #7c3aed;
+        margin-top: 1px;
+      }
+    }
+
+    .recommend-problems {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .recommend-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        background: #fafbfc;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f0f4ff;
+          border-color: #c4b5fd;
+        }
+
+        .recommend-item-left {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          .rec-problem-id {
+            font-size: 13px;
+            color: #a0aec0;
+            font-family: monospace;
+            font-weight: 600;
+          }
+
+          .rec-problem-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a202c;
+          }
+        }
+
+        .recommend-item-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #a0aec0;
+
+          .rec-accept-rate {
+            font-size: 18px;
+            font-weight: 700;
+            color: #38a169;
+          }
+        }
       }
     }
   }

@@ -198,17 +198,6 @@
               </template>
             </el-table-column>
             <el-table-column prop="score" label="得分" width="80" />
-            <el-table-column label="用时" width="110">
-              <template #default="{ row }">{{ formatMetric(row.timeUsed, 'ms') }}</template>
-            </el-table-column>
-            <el-table-column label="内存" width="110">
-              <template #default="{ row }">{{ formatMetric(row.memoryUsed, 'KB') }}</template>
-            </el-table-column>
-            <el-table-column label="结果摘要" min-width="240" show-overflow-tooltip>
-              <template #default="{ row }">
-                {{ row.outputDiffSummary || row.errorMessage || '点击展开查看详情' }}
-              </template>
-            </el-table-column>
           </el-table>
         </section>
       </template>

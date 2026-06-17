@@ -1,7 +1,7 @@
 // src/api/problem.ts
 import request from './request'
 import type { ApiResponse, PageResult } from '@/types/api'
-import type { Problem, ProblemQueryParams, ProblemSaveDTO } from '@/types/problem'
+import type { Problem, ProblemQueryParams, ProblemSaveDTO, LearningPathRecommendation } from '@/types/problem'
 
 /**
  * 分页查询题目列表
@@ -60,6 +60,20 @@ export const deleteProblem = (id: string): Promise<ApiResponse<null>> => {
   return request({
     url: `/problem/${id}`,
     method: 'DELETE'
+  })
+}
+
+/**
+ * 查询当前登录用户的个性化题目推荐和学习路径
+ * GET /problem/recommend
+ */
+export const getRecommendProblems = (
+  limit?: number
+): Promise<ApiResponse<LearningPathRecommendation>> => {
+  return request({
+    url: '/problem/recommend',
+    method: 'GET',
+    params: { limit }
   })
 }
 
