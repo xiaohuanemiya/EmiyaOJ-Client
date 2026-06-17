@@ -79,3 +79,35 @@ export interface ProblemSaveDTO {
   tagIds?: string[]      // 关联标签 ID 列表
   pictureIds?: string[]
 }
+
+// ===== 个性化学习推荐 =====
+
+/**
+ * 推荐题目
+ */
+export interface RecommendedProblem {
+  problemId: string
+  title: string
+  difficulty: 1 | 2 | 3
+  difficultyDesc: string
+  tags: string[]
+  acceptRate: number
+  priority: number
+  reason: string
+}
+
+/**
+ * 个性化学习推荐 VO（GET /problem/recommend）
+ */
+export interface LearningPathRecommendation {
+  userId: string
+  traceId: string
+  source: 'LLM' | 'STATIC_FALLBACK' | string
+  model: string
+  generatedAt: string
+  summary: string
+  learningPath: string[]
+  weakTags: string[]
+  targetDifficulty: 1 | 2 | 3
+  recommendations: RecommendedProblem[]
+}
